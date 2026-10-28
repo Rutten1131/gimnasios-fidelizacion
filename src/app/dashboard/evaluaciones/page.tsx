@@ -17,11 +17,9 @@ import { useDashboard } from '../layout';
 export default function EvaluationsPage() {
   const { data, loading } = useDashboard();
 
-  // Evaluation filters
   const [evalFilterTrainer, setEvalFilterTrainer] = useState('');
   const [evalFilterRating, setEvalFilterRating] = useState('');
 
-  // Customers search & Activity Modal & Limits
   const [customerSearch, setCustomerSearch] = useState('');
   const [customerLimit, setCustomerLimit] = useState(5);
   const [evalLimit, setEvalLimit] = useState(5);
@@ -105,20 +103,19 @@ export default function EvaluationsPage() {
               }}
               className="self-end px-3 py-2.5 bg-[#02050B] hover:bg-[#0E1B2E] border border-[#0E1B2E] text-[#7A93B2] text-xs font-semibold rounded-sm transition cursor-pointer"
             >
-              Limpiar Filtros
+              Limpiar
             </button>
           )}
         </div>
 
-        {/* Evaluations count */}
         <div className="text-xs text-[#7A93B2]">
-          Mostrando <span className="text-[#FFFFFF] font-bold">{filteredEvaluations.length}</span> de{' '}
-          {data?.evaluations?.length || 0} evaluaciones
+          Mostrando <span className="text-[#FFFFFF] font-bold">{Math.min(filteredEvaluations.length, evalLimit)}</span> de{' '}
+          {filteredEvaluations.length} evaluaciones
         </div>
 
-        {/* Table */}
-        <div className="sharp-card border border-[#0E1B2E] overflow-x-auto">
-          <table className="w-full text-left text-sm min-w-[600px]">
+        {/* Desktop Table */}
+        <div className="sharp-card border border-[#0E1B2E] overflow-x-auto hidden sm:block">
+          <table className="w-full text-left text-sm">
             <thead className="bg-[#02050B] text-[#7A93B2] border-b border-[#0E1B2E] font-title text-xs">
               <tr>
                 <th className="p-4">FECHA Y HORA</th>
@@ -159,13 +156,39 @@ export default function EvaluationsPage() {
             </tbody>
           </table>
         </div>
+
+        {/* Mobile Cards — evaluaciones */}
+        <div className="sm:hidden space-y-3">
+          {filteredEvaluations.length === 0 ? (
+            <div className="p-6 sharp-card border border-[#0E1B2E] rounded-sm text-center text-[#7A93B2] text-xs">
+              Sin evaluaciones registradas.
+            </div>
+          ) : (
+            filteredEvaluations.slice(0, evalLimit).map((ev: any) => (
+              <div key={ev.id} className="sharp-card border border-[#0E1B2E] rounded-sm p-4 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-[#FFFFFF] text-sm">{ev.trainer?.name || 'Coach'}</span>
+                  <span className="font-number text-base text-[#00F5D4] px-2 py-0.5 bg-[#02050B] border border-[#0E1B2E] rounded-sm">
+                    ★ {ev.rating}
+                  </span>
+                </div>
+                <p className="text-xs text-[#7A93B2] italic">
+                  {ev.comment || 'Sin comentario'}
+                </p>
+                <p className="text-[10px] text-[#7A93B2] font-mono">
+                  {new Date(ev.createdAt).toLocaleString()}
+                </p>
+              </div>
+            ))
+          )}
+        </div>
+
         {filteredEvaluations.length > evalLimit && (
           <button
             onClick={() => setEvalLimit((prev) => prev + 5)}
             className="w-full py-3 bg-[#02050B] hover:bg-[#060D18] border border-[#0E1B2E] text-[#00F5D4] text-xs font-bold font-title tracking-wider rounded-sm transition flex items-center justify-center gap-1.5 cursor-pointer glow-cyan"
           >
-            <Plus className="w-3.5 h-3.5" /> VER MÁS OPINIONES (Mostrando {evalLimit} de{' '}
-            {filteredEvaluations.length})
+            <Plus className="w-3.5 h-3.5" /> VER MÁS OPINIONES ({evalLimit} de {filteredEvaluations.length})
           </button>
         )}
       </div>
@@ -198,9 +221,9 @@ export default function EvaluationsPage() {
           </div>
         </div>
 
-        {/* Customers Table */}
-        <div className="sharp-card border border-[#0E1B2E] overflow-x-auto">
-          <table className="w-full text-left text-sm min-w-[700px]">
+        {/* Desktop Table — Customers */}
+        <div className="sharp-card border border-[#0E1B2E] overflow-x-auto hidden sm:block">
+          <table className="w-full text-left text-sm">
             <thead className="bg-[#02050B] text-[#7A93B2] border-b border-[#0E1B2E] font-title text-xs">
               <tr>
                 <th className="p-4">NOMBRE (WHATSAPP)</th>
@@ -222,9 +245,11 @@ export default function EvaluationsPage() {
                 filteredCustomers.slice(0, customerLimit).map((c: any) => (
                   <tr key={c.id} className="hover:bg-[#02050B] transition">
                     <td className="p-4 font-bold text-[#FFFFFF] text-xs">{c.name}</td>
-                    <td className="p-4 text-[#7A93B2] font-mono text-xs flex items-center gap-1.5">
-                      <Phone className="w-3 h-3 text-[#00F5D4]" />
-                      {c.phone}
+                    <td className="p-4 text-[#7A93B2] font-mono text-xs">
+                      <span className="flex items-center gap-1.5">
+                        <Phone className="w-3 h-3 text-[#00F5D4]" />
+                        {c.phone}
+                      </span>
                     </td>
                     <td className="p-4">
                       <span
@@ -260,29 +285,70 @@ export default function EvaluationsPage() {
           </table>
         </div>
 
+        {/* Mobile Cards — Customers */}
+        <div className="sm:hidden space-y-3">
+          {filteredCustomers.length === 0 ? (
+            <div className="p-6 sharp-card border border-[#0E1B2E] rounded-sm text-center text-[#7A93B2] text-xs">
+              Sin clientes registrados.
+            </div>
+          ) : (
+            filteredCustomers.slice(0, customerLimit).map((c: any) => (
+              <div key={c.id} className="sharp-card border border-[#0E1B2E] rounded-sm p-4 space-y-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="space-y-1 min-w-0">
+                    <div className="font-bold text-[#FFFFFF] text-sm truncate">{c.name}</div>
+                    <div className="text-xs text-[#7A93B2] font-mono flex items-center gap-1">
+                      <Phone className="w-3 h-3 text-[#00F5D4] shrink-0" />
+                      {c.phone}
+                    </div>
+                  </div>
+                  <span
+                    className={`px-2.5 py-0.5 rounded-sm text-[10px] font-bold tracking-wider shrink-0 ${
+                      c.membershipActive
+                        ? 'bg-emerald-950/40 border border-emerald-800/50 text-emerald-400'
+                        : 'bg-rose-950/40 border border-rose-800/50 text-rose-400'
+                    }`}
+                  >
+                    {c.membershipActive ? 'ACTIVO' : 'INACTIVO'}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-[10px] text-[#7A93B2] font-mono">
+                  <span>Vence: {c.membershipExpiry ? new Date(c.membershipExpiry).toLocaleDateString() : '—'}</span>
+                  <span>Reg: {new Date(c.createdAt).toLocaleDateString()}</span>
+                </div>
+                <button
+                  onClick={() => setSelectedCustomerModal(c)}
+                  className="w-full py-2 bg-[#02050B] hover:bg-[#0E1B2E] border border-[#00F5D4]/40 text-[#00F5D4] text-xs font-semibold rounded-sm font-title tracking-wider transition flex items-center justify-center gap-1.5 cursor-pointer glow-cyan"
+                >
+                  <Clock className="w-3.5 h-3.5" /> VER ACTIVIDAD
+                </button>
+              </div>
+            ))
+          )}
+        </div>
+
         {filteredCustomers.length > customerLimit && (
           <button
             onClick={() => setCustomerLimit((prev) => prev + 5)}
             className="w-full py-3 bg-[#02050B] hover:bg-[#060D18] border border-[#0E1B2E] text-[#00F5D4] hover:text-[#FFFFFF] text-xs font-bold font-title tracking-wider rounded-sm transition flex items-center justify-center gap-1.5 cursor-pointer glow-cyan"
           >
-            <Plus className="w-4 h-4" /> VER MÁS CLIENTES (Mostrando {customerLimit} de{' '}
-            {filteredCustomers.length})
+            <Plus className="w-4 h-4" /> VER MÁS CLIENTES ({customerLimit} de {filteredCustomers.length})
           </button>
         )}
       </div>
 
-      {/* CUSTOMER ACTIVITY DETAIL MODAL WITH TABS */}
+      {/* CUSTOMER ACTIVITY DETAIL MODAL */}
       {selectedCustomerModal && (
-        <div className="fixed inset-0 z-50 bg-[#02050B]/90 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="sharp-panel rounded-none w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden border border-[#00F5D4]/30">
+        <div className="fixed inset-0 z-50 bg-[#02050B]/90 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div className="sharp-panel w-full sm:max-w-2xl max-h-[92vh] sm:max-h-[90vh] flex flex-col shadow-2xl overflow-hidden border border-[#00F5D4]/30 rounded-t-xl sm:rounded-none">
             {/* Modal Header */}
-            <div className="p-5 bg-[#02050B] border-b border-[#0E1B2E] flex items-center justify-between">
+            <div className="p-4 md:p-5 bg-[#02050B] border-b border-[#0E1B2E] flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-[#060D18] border border-[#00F5D4]/40 rounded-sm flex items-center justify-center text-[#00F5D4] glow-cyan">
-                  <Users className="w-5 h-5" />
+                <div className="w-9 h-9 md:w-10 md:h-10 bg-[#060D18] border border-[#00F5D4]/40 rounded-sm flex items-center justify-center text-[#00F5D4] glow-cyan">
+                  <Users className="w-4 h-4 md:w-5 md:h-5" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-[#FFFFFF] text-base font-title tracking-wide">
+                  <h3 className="font-bold text-[#FFFFFF] text-sm md:text-base font-title tracking-wide">
                     {selectedCustomerModal.name}
                   </h3>
                   <p className="text-xs text-[#7A93B2] font-mono flex items-center gap-1">
@@ -298,28 +364,27 @@ export default function EvaluationsPage() {
               </button>
             </div>
 
-            {/* Modal Sub-Tabs Header */}
+            {/* Modal Sub-Tabs */}
             <div className="bg-[#02050B] border-b border-[#0E1B2E] p-1.5 grid grid-cols-3 gap-1">
               {[
                 {
                   key: 'membership' as const,
-                  label: 'MENSUALIDAD & REF.',
+                  label: 'MENSUALIDAD',
                   icon: CreditCard,
                   count:
-                    (selectedCustomerModal.payments?.filter((p: any) => p.type === 'MEMBERSHIP')
-                      .length || 0) + (selectedCustomerModal.referralsGiven?.length || 0),
+                    (selectedCustomerModal.payments?.filter((p: any) => p.type === 'MEMBERSHIP').length || 0) +
+                    (selectedCustomerModal.referralsGiven?.length || 0),
                 },
                 {
                   key: 'retail' as const,
-                  label: 'TIENDA RETAIL',
+                  label: 'TIENDA',
                   icon: ShoppingBag,
                   count:
-                    selectedCustomerModal.payments?.filter((p: any) => p.type === 'RETAIL_STORE')
-                      .length || 0,
+                    selectedCustomerModal.payments?.filter((p: any) => p.type === 'RETAIL_STORE').length || 0,
                 },
                 {
                   key: 'evaluations' as const,
-                  label: 'OPINIÓN COACHES',
+                  label: 'OPINIONES',
                   icon: Star,
                   count: selectedCustomerModal.evaluations?.length || 0,
                 },
@@ -327,25 +392,25 @@ export default function EvaluationsPage() {
                 <button
                   key={tab.key}
                   onClick={() => setModalTab(tab.key)}
-                  className={`py-2 px-1 text-[11px] font-bold font-title tracking-wider rounded-sm transition flex items-center justify-center gap-1.5 cursor-pointer ${
+                  className={`py-2 px-1 text-[10px] font-bold font-title tracking-wider rounded-sm transition flex items-center justify-center gap-1 cursor-pointer ${
                     modalTab === tab.key
                       ? 'bg-[#060D18] text-[#FFFFFF] border border-[#00F5D4]/40 glow-cyan'
                       : 'text-[#7A93B2] hover:text-[#FFFFFF] hover:bg-[#060D18]/50'
                   }`}
                 >
-                  <tab.icon className="w-3.5 h-3.5 text-[#00F5D4] shrink-0 hidden sm:inline-block" />
+                  <tab.icon className="w-3.5 h-3.5 text-[#00F5D4] shrink-0" />
                   <span className="truncate">{tab.label}</span>
-                  <span className="bg-[#02050B] text-[#00F5D4] text-[10px] font-mono font-bold px-1.5 py-0.2 rounded-sm border border-[#0E1B2E] shrink-0">
+                  <span className="bg-[#02050B] text-[#00F5D4] text-[10px] font-mono font-bold px-1.5 rounded-sm border border-[#0E1B2E] shrink-0">
                     {tab.count}
                   </span>
                 </button>
               ))}
             </div>
 
-            {/* Modal Content Area */}
-            <div className="p-5 space-y-5 overflow-y-auto flex-1">
+            {/* Modal Content */}
+            <div className="p-4 md:p-5 space-y-4 overflow-y-auto flex-1">
               {modalTab === 'membership' && (
-                <div className="space-y-5">
+                <div className="space-y-4">
                   <div className="flex items-center justify-between p-3.5 bg-[#02050B] border border-[#0E1B2E] rounded-sm">
                     <div>
                       <span className="text-[10px] font-title font-semibold text-[#7A93B2] uppercase block">
@@ -353,9 +418,7 @@ export default function EvaluationsPage() {
                       </span>
                       <span
                         className={`text-xs font-bold font-title tracking-wider ${
-                          selectedCustomerModal.membershipActive
-                            ? 'text-[#00F5D4]'
-                            : 'text-rose-400'
+                          selectedCustomerModal.membershipActive ? 'text-[#00F5D4]' : 'text-rose-400'
                         }`}
                       >
                         {selectedCustomerModal.membershipActive ? '● ACTIVA' : '○ INACTIVA'}
@@ -377,8 +440,7 @@ export default function EvaluationsPage() {
                     <h4 className="font-title text-xs font-bold text-[#FFFFFF] tracking-wider uppercase flex items-center gap-1.5">
                       <CreditCard className="w-3.5 h-3.5 text-[#00F5D4]" /> PAGOS DE MENSUALIDAD
                     </h4>
-                    {selectedCustomerModal.payments?.filter((p: any) => p.type === 'MEMBERSHIP')
-                      .length === 0 ? (
+                    {selectedCustomerModal.payments?.filter((p: any) => p.type === 'MEMBERSHIP').length === 0 ? (
                       <div className="p-3.5 bg-[#02050B] border border-[#0E1B2E] rounded-sm text-xs text-[#7A93B2] text-center">
                         Sin historial de mensualidades registradas.
                       </div>
@@ -391,9 +453,7 @@ export default function EvaluationsPage() {
                             className="p-3.5 bg-[#02050B] border border-[#0E1B2E] rounded-sm flex items-center justify-between"
                           >
                             <div>
-                              <div className="font-bold text-xs text-[#FFFFFF]">
-                                Renovación Mensualidad Gym
-                              </div>
+                              <div className="font-bold text-xs text-[#FFFFFF]">Renovación Mensualidad Gym</div>
                               <div className="text-[10px] text-[#7A93B2] font-mono">
                                 {new Date(p.createdAt).toLocaleString()}
                               </div>
@@ -413,8 +473,7 @@ export default function EvaluationsPage() {
                   <h4 className="font-title text-xs font-bold text-[#FFFFFF] tracking-wider uppercase flex items-center gap-1.5">
                     <ShoppingBag className="w-3.5 h-3.5 text-[#00F5D4]" /> COMPRAS EN TIENDA RETAIL
                   </h4>
-                  {selectedCustomerModal.payments?.filter((p: any) => p.type === 'RETAIL_STORE')
-                    .length === 0 ? (
+                  {selectedCustomerModal.payments?.filter((p: any) => p.type === 'RETAIL_STORE').length === 0 ? (
                     <div className="p-3.5 bg-[#02050B] border border-[#0E1B2E] rounded-sm text-xs text-[#7A93B2] text-center">
                       Sin compras registradas en la tienda retail.
                     </div>
@@ -462,13 +521,9 @@ export default function EvaluationsPage() {
                           <span className="font-bold text-xs text-[#FFFFFF]">
                             Coach: {ev.trainer?.name}
                           </span>
-                          <span className="font-number text-sm text-[#00F5D4]">
-                            ★ {ev.rating}
-                          </span>
+                          <span className="font-number text-sm text-[#00F5D4]">★ {ev.rating}</span>
                         </div>
-                        <p className="text-xs text-[#7A93B2] italic">
-                          "{ev.comment || 'Sin comentario'}"
-                        </p>
+                        <p className="text-xs text-[#7A93B2] italic">"{ev.comment || 'Sin comentario'}"</p>
                       </div>
                     ))
                   )}

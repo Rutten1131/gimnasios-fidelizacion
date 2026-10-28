@@ -7,13 +7,10 @@ import { useDashboard } from '../layout';
 export default function WalletPage() {
   const { data, loading, refreshData } = useDashboard();
 
-  // Redeem form state
   const [selectedCustomerId, setSelectedCustomerId] = useState('');
   const [redeemAmount, setRedeemAmount] = useState('');
   const [redeemError, setRedeemError] = useState('');
   const [redeemSuccess, setRedeemSuccess] = useState('');
-
-  // Search state
   const [walletSearch, setWalletSearch] = useState('');
 
   const handleRedeemWallet = async (e: React.FormEvent) => {
@@ -50,16 +47,33 @@ export default function WalletPage() {
     );
   }
 
+  const filteredWallets = (data?.wallets || [])
+    .filter((w: any) => {
+      if (!walletSearch) return true;
+      const q = walletSearch.toLowerCase();
+      return (
+        w.customer?.name?.toLowerCase().includes(q) ||
+        w.customer?.phone?.includes(q)
+      );
+    })
+    .slice(0, 10);
+
+  const activeWalletObj = selectedCustomerId
+    ? data?.wallets?.find((w: any) => w.customerId === selectedCustomerId)
+    : null;
+
   return (
     <div className="space-y-6">
       <h2 className="font-title text-base md:text-lg font-bold text-gradient-cyan tracking-widest">
         BILLETERA & CANJES (HASTA 100%)
       </h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Redeem Form & Selected Customer Activity */}
+      {/* ── MAIN LAYOUT: stack on mobile, 3-col on desktop ── */}
+      <div className="flex flex-col md:grid md:grid-cols-3 gap-6">
+
+        {/* LEFT: Redeem form + selected customer */}
         <div className="space-y-4">
-          <div className="sharp-card rounded-sm p-6 space-y-4 border border-[#0E1B2E]">
+          <div className="sharp-card rounded-sm p-5 space-y-4 border border-[#0E1B2E]">
             <h3 className="font-title text-sm font-bold text-[#FFFFFF] flex items-center gap-2">
               <Wallet className="w-4 h-4 text-[#00F5D4]" /> PROCESAR CANJE
             </h3>
@@ -116,74 +130,68 @@ export default function WalletPage() {
           </div>
 
           {/* Selected Customer Activity Breakdown */}
-          {selectedCustomerId && (() => {
-            const activeWalletObj = data?.wallets?.find(
-              (w: any) => w.customerId === selectedCustomerId
-            );
-            if (!activeWalletObj) return null;
-            return (
-              <div className="sharp-card rounded-sm p-5 space-y-3 border border-[#00F5D4]/30">
-                <div className="flex items-center justify-between border-b border-[#0E1B2E] pb-3">
-                  <div>
-                    <span className="text-[10px] font-title font-semibold text-[#7A93B2] uppercase block">
-                      CLIENTE SELECCIONADO
-                    </span>
-                    <div className="font-bold text-xs text-[#FFFFFF]">{activeWalletObj.customer?.name}</div>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-[10px] font-title font-semibold text-[#7A93B2] uppercase block">
-                      SALDO DISPONIBLE
-                    </span>
-                    <div className="font-number text-lg font-bold text-[#00F5D4]">
-                      $ {Number(activeWalletObj.balance).toFixed(2)}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-2 pt-1">
-                  <span className="text-[10px] font-title font-bold text-[#FFFFFF] uppercase block">
-                    HISTORIAL DE ACUMULACIÓN Y CANJES
+          {activeWalletObj && (
+            <div className="sharp-card rounded-sm p-5 space-y-3 border border-[#00F5D4]/30">
+              <div className="flex items-center justify-between border-b border-[#0E1B2E] pb-3">
+                <div>
+                  <span className="text-[10px] font-title font-semibold text-[#7A93B2] uppercase block">
+                    CLIENTE SELECCIONADO
                   </span>
-                  {activeWalletObj.transactions?.length === 0 ? (
-                    <div className="p-3 bg-[#02050B] border border-[#0E1B2E] rounded-sm text-xs text-[#7A93B2] text-center">
-                      Sin transacciones registradas en billetera.
-                    </div>
-                  ) : (
-                    <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
-                      {activeWalletObj.transactions?.map((tx: any) => (
-                        <div
-                          key={tx.id}
-                          className="p-2.5 bg-[#02050B] border border-[#0E1B2E] rounded-sm flex items-center justify-between text-xs"
-                        >
-                          <div>
-                            <div className="font-bold text-[#FFFFFF] text-[11px]">
-                              {tx.description || tx.type}
-                            </div>
-                            <div className="text-[10px] text-[#7A93B2] font-mono">
-                              {new Date(tx.createdAt).toLocaleString()}
-                            </div>
-                          </div>
-                          <span
-                            className={`font-number font-bold text-xs ${
-                              tx.amount > 0 ? 'text-[#00F5D4]' : 'text-rose-400'
-                            }`}
-                          >
-                            {tx.amount > 0
-                              ? `+ $ ${Number(tx.amount).toFixed(2)}`
-                              : `- $ ${Math.abs(Number(tx.amount)).toFixed(2)}`}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                  <div className="font-bold text-xs text-[#FFFFFF]">{activeWalletObj.customer?.name}</div>
+                </div>
+                <div className="text-right">
+                  <span className="text-[10px] font-title font-semibold text-[#7A93B2] uppercase block">
+                    SALDO DISPONIBLE
+                  </span>
+                  <div className="font-number text-lg font-bold text-[#00F5D4]">
+                    $ {Number(activeWalletObj.balance).toFixed(2)}
+                  </div>
                 </div>
               </div>
-            );
-          })()}
+
+              <div className="space-y-2 pt-1">
+                <span className="text-[10px] font-title font-bold text-[#FFFFFF] uppercase block">
+                  HISTORIAL DE ACUMULACIÓN Y CANJES
+                </span>
+                {activeWalletObj.transactions?.length === 0 ? (
+                  <div className="p-3 bg-[#02050B] border border-[#0E1B2E] rounded-sm text-xs text-[#7A93B2] text-center">
+                    Sin transacciones registradas en billetera.
+                  </div>
+                ) : (
+                  <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                    {activeWalletObj.transactions?.map((tx: any) => (
+                      <div
+                        key={tx.id}
+                        className="p-2.5 bg-[#02050B] border border-[#0E1B2E] rounded-sm flex items-center justify-between text-xs"
+                      >
+                        <div>
+                          <div className="font-bold text-[#FFFFFF] text-[11px]">
+                            {tx.description || tx.type}
+                          </div>
+                          <div className="text-[10px] text-[#7A93B2] font-mono">
+                            {new Date(tx.createdAt).toLocaleString()}
+                          </div>
+                        </div>
+                        <span
+                          className={`font-number font-bold text-xs shrink-0 ml-2 ${
+                            tx.amount > 0 ? 'text-[#00F5D4]' : 'text-rose-400'
+                          }`}
+                        >
+                          {tx.amount > 0
+                            ? `+ $ ${Number(tx.amount).toFixed(2)}`
+                            : `- $ ${Math.abs(Number(tx.amount)).toFixed(2)}`}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Wallets Ledger with Search & Top 10 Limit */}
-        <div className="md:col-span-2 sharp-card rounded-sm p-6 space-y-4 border border-[#0E1B2E]">
+        {/* RIGHT: Wallets Ledger */}
+        <div className="md:col-span-2 sharp-card rounded-sm p-5 space-y-4 border border-[#0E1B2E]">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#0E1B2E] pb-3">
             <div>
               <h3 className="font-title text-sm font-bold text-[#FFFFFF]">SALDOS DE CLIENTES</h3>
@@ -192,7 +200,7 @@ export default function WalletPage() {
               </p>
             </div>
             <div className="relative w-full sm:w-64">
-              <Search className="w-3.5 h-3.5 text-[#7A93B2] absolute left-3 top-3" />
+              <Search className="w-3.5 h-3.5 text-[#7A93B2] absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 placeholder="Buscar cliente o WhatsApp..."
@@ -203,28 +211,13 @@ export default function WalletPage() {
             </div>
           </div>
 
-          <div className="space-y-3 max-h-[500px] overflow-y-auto">
-            {(() => {
-              const filteredWallets = (data?.wallets || [])
-                .filter((w: any) => {
-                  if (!walletSearch) return true;
-                  const q = walletSearch.toLowerCase();
-                  return (
-                    w.customer?.name?.toLowerCase().includes(q) ||
-                    w.customer?.phone?.includes(q)
-                  );
-                })
-                .slice(0, 10);
-
-              if (filteredWallets.length === 0) {
-                return (
-                  <div className="p-6 bg-[#02050B] border border-[#0E1B2E] rounded-sm text-xs text-[#7A93B2] text-center">
-                    No se encontraron clientes con el criterio de búsqueda.
-                  </div>
-                );
-              }
-
-              return filteredWallets.map((w: any) => (
+          <div className="space-y-3 max-h-[480px] overflow-y-auto">
+            {filteredWallets.length === 0 ? (
+              <div className="p-6 bg-[#02050B] border border-[#0E1B2E] rounded-sm text-xs text-[#7A93B2] text-center">
+                No se encontraron clientes con el criterio de búsqueda.
+              </div>
+            ) : (
+              filteredWallets.map((w: any) => (
                 <div
                   key={w.id}
                   onClick={() => setSelectedCustomerId(w.customerId)}
@@ -234,21 +227,21 @@ export default function WalletPage() {
                       : 'bg-[#02050B]/60 hover:bg-[#02050B] border-[#0E1B2E]'
                   }`}
                 >
-                  <div>
-                    <div className="font-bold text-[#FFFFFF] text-sm flex items-center gap-2">
-                      {w.customer?.name}
+                  <div className="min-w-0">
+                    <div className="font-bold text-[#FFFFFF] text-sm flex items-center gap-2 flex-wrap">
+                      <span className="truncate">{w.customer?.name}</span>
                       {selectedCustomerId === w.customerId && (
-                        <span className="text-[9px] bg-[#00F5D4] text-[#02050B] font-bold font-title px-1.5 py-0.2 rounded-sm uppercase">
+                        <span className="text-[9px] bg-[#00F5D4] text-[#02050B] font-bold font-title px-1.5 rounded-sm uppercase shrink-0">
                           SELECCIONADO
                         </span>
                       )}
                     </div>
-                    <div className="text-xs text-[#7A93B2] font-mono">
+                    <div className="text-xs text-[#7A93B2] font-mono truncate">
                       WhatsApp: +{w.customer?.phone}
                     </div>
                   </div>
-                  <div className="text-right">
-                    <div className="font-number text-2xl font-semibold text-[#00F5D4]">
+                  <div className="text-right shrink-0 ml-3">
+                    <div className="font-number text-xl md:text-2xl font-semibold text-[#00F5D4]">
                       $ {Number(w.balance).toFixed(2)}
                     </div>
                     <div className="text-xs text-[#7A93B2] font-mono">
@@ -256,8 +249,8 @@ export default function WalletPage() {
                     </div>
                   </div>
                 </div>
-              ));
-            })()}
+              ))
+            )}
           </div>
         </div>
       </div>

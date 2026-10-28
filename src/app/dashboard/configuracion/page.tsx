@@ -11,6 +11,7 @@ import {
   Trash2,
   CreditCard,
   CheckCircle,
+  Percent,
 } from 'lucide-react';
 import { useDashboard } from '../layout';
 
@@ -160,7 +161,7 @@ export default function ConfigPage() {
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'Error al agregar entrenador');
       setNewTrainerName('');
-      setTrainerMessage(' Coach agregado exitosamente');
+      setTrainerMessage('Coach agregado exitosamente');
       refreshData();
     } catch (err: any) {
       alert(err.message);
@@ -197,7 +198,7 @@ export default function ConfigPage() {
       if (!res.ok) throw new Error(json.error || 'Error al crear plan');
       setNewPlanName('');
       setNewPlanPrice('');
-      setPlanMessage(' Plan de membresía creado exitosamente');
+      setPlanMessage('Plan de membresía creado exitosamente');
       refreshData();
     } catch (err: any) {
       alert(err.message);
@@ -233,7 +234,7 @@ export default function ConfigPage() {
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'Error al guardar la configuración');
-      setConfigMessage(' Configuración guardada correctamente.');
+      setConfigMessage('Configuración guardada correctamente.');
       refreshData();
     } catch (err: any) {
       alert(err.message);
@@ -251,357 +252,379 @@ export default function ConfigPage() {
   }
 
   return (
-    <div className="max-w-3xl space-y-6 md:space-y-8">
-      <h2 className="font-title text-base md:text-lg font-bold text-gradient-cyan tracking-widest">
-        CONFIGURACIÓN OWNER
-      </h2>
-
-      {/* 1. WHATSAPP INSTANCE & PWA NOTIFICATIONS */}
-      <div className="sharp-card rounded-sm p-4 md:p-6 space-y-5 border border-[#0E1B2E]">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#0E1B2E] pb-4 gap-3">
-          <div>
-            <h3 className="font-title font-bold text-xs md:text-sm text-[#FFFFFF] tracking-wider uppercase">
-              VINCULACIÓN INSTANCIA WHATSAPP
-            </h3>
-            <p className="text-xs text-[#7A93B2] mt-0.5">
-              Vincule su número de WhatsApp escaneando el código QR para habilitar el bot automático.
-            </p>
-          </div>
-          <span
-            className={`px-3 py-1 rounded-sm text-xs font-bold font-title tracking-wider self-start sm:self-center ${
-              waState === 'CONNECTED'
-                ? 'bg-[#02050B] border border-[#00F5D4]/40 text-[#00F5D4]'
-                : 'bg-amber-950/40 border border-amber-800/50 text-amber-300'
-            }`}
-          >
-            {waState === 'CONNECTED' ? '● CONECTADO' : '○ DESCONECTADO'}
-          </span>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-[#0E1B2E] pb-4">
+        <div>
+          <h2 className="font-title text-base md:text-xl font-bold text-gradient-cyan tracking-widest uppercase">
+            CONFIGURACIÓN GENERAL
+          </h2>
+          <p className="text-xs text-[#7A93B2] mt-0.5">
+            Administra la conexión con WhatsApp, parámetros del negocio, entrenadores y membresías.
+          </p>
         </div>
+      </div>
 
-        {waState === 'CONNECTED' ? (
-          <div className="p-4 bg-[#02050B] border border-[#0E1B2E] rounded-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <Check className="w-5 h-5 text-[#00F5D4] shrink-0" />
+      {/* Grid: 2 columns on Desktop, 1 on Mobile */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+        
+        {/* ── COLUMNA IZQUIERDA: CONECTIVIDAD & AUTOMATIZACIÓN ── */}
+        <div className="space-y-6">
+
+          {/* 1. WHATSAPP INSTANCE */}
+          <div className="sharp-card rounded-sm p-5 md:p-6 space-y-4 border border-[#0E1B2E]">
+            <div className="flex items-center justify-between border-b border-[#0E1B2E] pb-3 gap-2">
               <div>
-                <div className="font-bold text-[#FFFFFF] text-sm flex items-center gap-2">
-                  Instancia Vinculada Correctamente
-                  {(waPhone || data?.tenant?.whatsappPhone) && (
-                    <span className="px-2 py-0.5 bg-[#00F5D4]/10 border border-[#00F5D4]/40 text-[#00F5D4] text-xs font-mono rounded-sm">
-                      +{waPhone || data?.tenant?.whatsappPhone}
-                    </span>
-                  )}
-                </div>
-                <div className="text-xs font-mono text-[#7A93B2]">
-                  Instancia: {waInstanceName}
-                </div>
-              </div>
-            </div>
-            <button
-              onClick={loadWhatsAppStatus}
-              className="px-3.5 py-2 bg-[#060D18] hover:bg-[#0E1B2E] text-[#7A93B2] hover:text-[#FFFFFF] text-xs font-semibold rounded-sm border border-[#0E1B2E] transition flex items-center justify-center gap-1.5 self-start sm:self-center cursor-pointer"
-            >
-              <RefreshCw className="w-3.5 h-3.5" /> Verificar
-            </button>
-          </div>
-        ) : (
-          <div className="flex flex-col items-center justify-center p-6 bg-[#02050B] border border-[#0E1B2E] rounded-sm space-y-4">
-            {waQr ? (
-              <div className="flex flex-col items-center space-y-3">
-                <div className="p-4 bg-white rounded-sm border border-[#00F5D4]/40 shadow-lg">
-                  <img
-                    src={waQr.startsWith('data:') ? waQr : `data:image/png;base64,${waQr}`}
-                    alt="WhatsApp QR Code"
-                    className="w-48 h-48 md:w-52 md:h-52 object-contain"
-                  />
-                </div>
-                <p className="text-xs text-[#7A93B2] text-center max-w-xs">
-                  Abre WhatsApp en tu teléfono, ve a <b>Dispositivos vinculados</b> y escanea este
-                  código.
+                <h3 className="font-title font-bold text-xs md:text-sm text-[#FFFFFF] tracking-wider uppercase flex items-center gap-2">
+                  <QrCode className="w-4 h-4 text-[#00F5D4]" />
+                  VINCULACIÓN INSTANCIA WHATSAPP
+                </h3>
+                <p className="text-[11px] text-[#7A93B2] mt-0.5">
+                  Conecta el bot para respuestas automáticas y códigos de canje.
                 </p>
+              </div>
+              <span
+                className={`px-2.5 py-1 rounded-sm text-[10px] font-bold font-title tracking-wider shrink-0 ${
+                  waState === 'CONNECTED'
+                    ? 'bg-[#02050B] border border-[#00F5D4]/40 text-[#00F5D4]'
+                    : 'bg-amber-950/40 border border-amber-800/50 text-amber-300'
+                }`}
+              >
+                {waState === 'CONNECTED' ? '● CONECTADO' : '○ DESCONECTADO'}
+              </span>
+            </div>
+
+            {waState === 'CONNECTED' ? (
+              <div className="p-4 bg-[#02050B] border border-[#0E1B2E] rounded-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <Check className="w-5 h-5 text-[#00F5D4] shrink-0" />
+                  <div>
+                    <div className="font-bold text-[#FFFFFF] text-xs sm:text-sm flex items-center gap-2 flex-wrap">
+                      Instancia Vinculada Correctamente
+                      {(waPhone || data?.tenant?.whatsappPhone) && (
+                        <span className="px-2 py-0.5 bg-[#00F5D4]/10 border border-[#00F5D4]/40 text-[#00F5D4] text-xs font-mono rounded-sm">
+                          +{waPhone || data?.tenant?.whatsappPhone}
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-[11px] font-mono text-[#7A93B2]">
+                      Instancia: {waInstanceName}
+                    </div>
+                  </div>
+                </div>
+                <button
+                  onClick={loadWhatsAppStatus}
+                  className="px-3.5 py-2 bg-[#060D18] hover:bg-[#0E1B2E] text-[#7A93B2] hover:text-[#FFFFFF] text-xs font-semibold rounded-sm border border-[#0E1B2E] transition flex items-center justify-center gap-1.5 self-start sm:self-center cursor-pointer"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" /> Verificar
+                </button>
               </div>
             ) : (
-              <div className="text-center space-y-3">
-                <QrCode className="w-10 h-10 md:w-12 md:h-12 text-[#00F5D4] mx-auto opacity-80" />
-                <p className="text-xs text-[#7A93B2] max-w-sm">
-                  Haz clic abajo para vincular tu WhatsApp de forma segura.
-                </p>
-                <button
-                  onClick={handleInitWhatsAppInstance}
-                  disabled={waLoading}
-                  className="px-5 py-2.5 btn-cyan-gradient text-xs font-title tracking-wider uppercase rounded-sm transition cursor-pointer"
-                >
-                  {waLoading ? 'GENERANDO QR...' : 'VINCULAR WHATSAPP'}
-                </button>
+              <div className="flex flex-col items-center justify-center p-6 bg-[#02050B] border border-[#0E1B2E] rounded-sm space-y-4">
+                {waQr ? (
+                  <div className="flex flex-col items-center space-y-3">
+                    <div className="p-3 bg-white rounded-sm border border-[#00F5D4]/40 shadow-lg">
+                      <img
+                        src={waQr.startsWith('data:') ? waQr : `data:image/png;base64,${waQr}`}
+                        alt="WhatsApp QR Code"
+                        className="w-44 h-44 md:w-48 md:h-48 object-contain"
+                      />
+                    </div>
+                    <p className="text-[11px] text-[#7A93B2] text-center max-w-xs">
+                      Abre WhatsApp en tu teléfono, ve a <b>Dispositivos vinculados</b> y escanea este código.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="text-center space-y-3 py-2">
+                    <QrCode className="w-10 h-10 md:w-12 md:h-12 text-[#00F5D4] mx-auto opacity-80" />
+                    <p className="text-xs text-[#7A93B2] max-w-sm">
+                      Haz clic abajo para generar el código QR de vinculación instantánea.
+                    </p>
+                    <button
+                      onClick={handleInitWhatsAppInstance}
+                      disabled={waLoading}
+                      className="px-5 py-2.5 btn-cyan-gradient text-xs font-title tracking-wider uppercase rounded-sm transition cursor-pointer"
+                    >
+                      {waLoading ? 'GENERANDO QR...' : 'VINCULAR WHATSAPP'}
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>
-        )}
-      </div>
 
-      {/* 2. PWA / BROWSER NOTIFICATIONS */}
-      <div className="sharp-card rounded-sm p-4 md:p-6 space-y-4 border border-[#0E1B2E]">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#0E1B2E] pb-3 gap-2">
-          <div>
-            <h3 className="font-title font-bold text-xs md:text-sm text-[#FFFFFF] tracking-wider uppercase flex items-center gap-2">
-              <Bell className="w-4 h-4 text-[#00F5D4]" />
-              NOTIFICACIONES EN TIEMPO REAL (PWA / CELULAR)
-            </h3>
-            <p className="text-xs text-[#7A93B2] mt-0.5">
-              Reciba alertas sonoras e instantáneas en su celular o PC cuando un cliente solicite
-              verificar un pago.
-            </p>
+          {/* 2. PWA NOTIFICATIONS */}
+          <div className="sharp-card rounded-sm p-5 md:p-6 space-y-4 border border-[#0E1B2E]">
+            <div className="flex items-center justify-between border-b border-[#0E1B2E] pb-3 gap-2">
+              <div>
+                <h3 className="font-title font-bold text-xs md:text-sm text-[#FFFFFF] tracking-wider uppercase flex items-center gap-2">
+                  <Bell className="w-4 h-4 text-[#00F5D4]" />
+                  NOTIFICACIONES EN TIEMPO REAL
+                </h3>
+                <p className="text-[11px] text-[#7A93B2] mt-0.5">
+                  Reciba alertas instantáneas cuando un cliente envíe comprobante o pague.
+                </p>
+              </div>
+              <span
+                className={`px-2.5 py-1 rounded-sm text-[10px] font-bold font-title tracking-wider shrink-0 ${
+                  notifPermission === 'granted'
+                    ? 'bg-[#02050B] border border-[#00F5D4]/40 text-[#00F5D4]'
+                    : 'bg-amber-950/40 border border-amber-800/50 text-amber-300'
+                }`}
+              >
+                {notifPermission === 'granted' ? '● ACTIVADAS' : '○ DESACTIVADAS'}
+              </span>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3.5 bg-[#02050B] border border-[#0E1B2E] rounded-sm">
+              <div className="text-xs text-[#7A93B2]">
+                {notifPermission === 'granted'
+                  ? 'Las alertas sonoras y push están funcionando en este dispositivo.'
+                  : 'Activa las notificaciones en tu celular o PC para enterarte al instante de nuevos pagos.'}
+              </div>
+              {notifPermission !== 'granted' && (
+                <button
+                  onClick={requestPushPermission}
+                  type="button"
+                  className="w-full sm:w-auto px-4 py-2 bg-[#00F5D4] hover:bg-[#00E5FF] text-[#02050B] font-bold text-xs font-title tracking-wider uppercase rounded-sm transition shrink-0 flex items-center justify-center gap-1.5 cursor-pointer glow-cyan"
+                >
+                  <Bell className="w-3.5 h-3.5" /> ACTIVAR
+                </button>
+              )}
+            </div>
           </div>
-          <span
-            className={`px-2.5 py-1 rounded-sm text-xs font-bold font-title tracking-wider ${
-              notifPermission === 'granted'
-                ? 'bg-[#02050B] border border-[#00F5D4]/40 text-[#00F5D4]'
-                : 'bg-amber-950/40 border border-amber-800/50 text-amber-300'
-            }`}
-          >
-            {notifPermission === 'granted' ? '● ACTIVADAS' : '○ DESACTIVADAS'}
-          </span>
+
         </div>
 
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3.5 bg-[#02050B] border border-[#0E1B2E] rounded-sm">
-          <div className="text-xs text-[#7A93B2]">
-            {notifPermission === 'granted'
-              ? 'Las notificaciones instantáneas están activas en este navegador / dispositivo.'
-              : 'Activa las notificaciones en tu celular o PC para recibir alertas en tiempo real al ingresar pagos de mensualidad o tienda.'}
-          </div>
-          {notifPermission !== 'granted' && (
+        {/* ── COLUMNA DERECHA: NEGOCIO & PARÁMETROS ── */}
+        <div className="space-y-6">
+
+          {/* 3. COMISIONES & PARÁMETROS */}
+          <form
+            onSubmit={handleSaveConfig}
+            className="sharp-card rounded-sm p-5 md:p-6 space-y-4 border border-[#0E1B2E]"
+          >
+            <div className="border-b border-[#0E1B2E] pb-3">
+              <h3 className="font-title font-bold text-xs md:text-sm text-[#FFFFFF] tracking-wider uppercase flex items-center gap-2">
+                <Percent className="w-4 h-4 text-[#00F5D4]" />
+                COMISIONES POR REFERIDO & PARÁMETROS
+              </h3>
+              <p className="text-[11px] text-[#7A93B2] mt-0.5">
+                Porcentajes que se acreditan a la billetera y días para alertar inactividad.
+              </p>
+            </div>
+
+            {configMessage && (
+              <div className="p-3 bg-[#02050B] border border-[#00F5D4]/40 rounded-sm text-[#00F5D4] text-xs flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 shrink-0" /> {configMessage}
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              <div>
+                <label className="block text-[11px] font-title font-bold text-[#FFFFFF] tracking-wider mb-1">
+                  COMISIÓN MENSUALIDAD (%)
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  max="100"
+                  value={commPct}
+                  onChange={(e) => setCommPct(e.target.value)}
+                  required
+                  className="w-full py-2.5 px-3 bg-[#02050B] border border-[#0E1B2E] rounded-sm text-[#FFFFFF] text-xs focus:outline-none focus:border-[#00F5D4]"
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] font-title font-bold text-[#FFFFFF] tracking-wider mb-1">
+                  COMISIÓN TIENDA RETAIL (%)
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  max="100"
+                  value={storeCommPct}
+                  onChange={(e) => setStoreCommPct(e.target.value)}
+                  required
+                  className="w-full py-2.5 px-3 bg-[#02050B] border border-[#0E1B2E] rounded-sm text-[#FFFFFF] text-xs focus:outline-none focus:border-[#00F5D4]"
+                />
+              </div>
+              <div className="sm:col-span-2">
+                <label className="block text-[11px] font-title font-bold text-[#FFFFFF] tracking-wider mb-1">
+                  UMBRAL DÍAS INACTIVIDAD ("TE EXTRAÑAMOS")
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  max="365"
+                  value={inactivityDays}
+                  onChange={(e) => setInactivityDays(e.target.value)}
+                  required
+                  className="w-full py-2.5 px-3 bg-[#02050B] border border-[#0E1B2E] rounded-sm text-[#FFFFFF] text-xs focus:outline-none focus:border-[#00F5D4]"
+                />
+              </div>
+            </div>
+
             <button
-              onClick={requestPushPermission}
-              type="button"
-              className="w-full sm:w-auto px-4 py-2 bg-[#00F5D4] hover:bg-[#00E5FF] text-[#02050B] font-bold text-xs font-title tracking-wider uppercase rounded-sm transition shrink-0 flex items-center justify-center gap-1.5 cursor-pointer glow-cyan"
+              type="submit"
+              disabled={configSaving}
+              className="w-full py-3 btn-cyan-gradient font-bold text-xs font-title tracking-wider uppercase rounded-sm transition cursor-pointer"
             >
-              <Bell className="w-3.5 h-3.5" /> ACTIVAR NOTIFICACIONES
+              {configSaving ? 'GUARDANDO...' : 'GUARDAR PARÁMETROS'}
             </button>
-          )}
-        </div>
-      </div>
+          </form>
 
-      {/* 3. TRAINERS MANAGEMENT (NAME ONLY) */}
-      <div className="sharp-card rounded-sm p-4 md:p-6 space-y-5 border border-[#0E1B2E]">
-        <div className="border-b border-[#0E1B2E] pb-3">
-          <h3 className="font-title font-bold text-xs md:text-sm text-[#FFFFFF] tracking-wider uppercase flex items-center gap-2">
-            <UserPlus className="w-4 h-4 text-[#00F5D4]" />
-            GESTIÓN DE ENTRENADORES
-          </h3>
-          <p className="text-xs text-[#7A93B2] mt-0.5">
-            Agrega o elimina entrenadores para que tus clientes puedan calificarlos en el flujo 1 de
-            WhatsApp.
-          </p>
-        </div>
-
-        {trainerMessage && (
-          <div className="p-3 bg-[#02050B] border border-[#00F5D4]/40 rounded-sm text-[#00F5D4] text-xs">
-            {trainerMessage}
-          </div>
-        )}
-
-        <form onSubmit={handleAddTrainer} className="flex flex-col sm:flex-row gap-3">
-          <input
-            type="text"
-            placeholder="Nombre del Entrenador / Coach"
-            value={newTrainerName}
-            onChange={(e) => setNewTrainerName(e.target.value)}
-            required
-            className="flex-1 py-2.5 px-3 bg-[#02050B] border border-[#0E1B2E] rounded-sm text-xs text-[#FFFFFF] focus:outline-none focus:border-[#00F5D4]"
-          />
-          <button
-            type="submit"
-            disabled={addingTrainer}
-            className="py-2.5 px-5 btn-cyan-gradient text-xs font-title tracking-wider uppercase rounded-sm transition flex items-center justify-center gap-1.5 shrink-0 cursor-pointer"
-          >
-            <Plus className="w-4 h-4" /> {addingTrainer ? 'AGREGANDO...' : 'AGREGAR COACH'}
-          </button>
-        </form>
-
-        <div className="space-y-2 pt-2">
-          <span className="text-xs font-title text-[#7A93B2] uppercase block">
-            ENTRENADORES ACTIVOS ({trainers.length})
-          </span>
-          {trainers.length === 0 ? (
-            <div className="p-4 bg-[#02050B] border border-[#0E1B2E] rounded-sm text-xs text-[#7A93B2] text-center">
-              No hay entrenadores registrados. Agrega uno arriba.
+          {/* 4. TRAINERS MANAGEMENT */}
+          <div className="sharp-card rounded-sm p-5 md:p-6 space-y-4 border border-[#0E1B2E]">
+            <div className="border-b border-[#0E1B2E] pb-3">
+              <h3 className="font-title font-bold text-xs md:text-sm text-[#FFFFFF] tracking-wider uppercase flex items-center gap-2">
+                <UserPlus className="w-4 h-4 text-[#00F5D4]" />
+                GESTIÓN DE ENTRENADORES
+              </h3>
+              <p className="text-[11px] text-[#7A93B2] mt-0.5">
+                Coaches disponibles para ser calificados en el código QR.
+              </p>
             </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {trainers.map((t) => (
-                <div
-                  key={t.id}
-                  className="bg-[#02050B] border border-[#0E1B2E] rounded-sm p-3 flex items-center justify-between"
-                >
-                  <div className="font-bold text-xs text-[#FFFFFF]">{t.name}</div>
-                  <button
-                    onClick={() => handleDeleteTrainer(t.id)}
-                    className="p-1.5 text-rose-400 hover:text-rose-300 hover:bg-rose-950/30 rounded-sm transition cursor-pointer"
-                    title="Eliminar Entrenador"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+
+            {trainerMessage && (
+              <div className="p-2.5 bg-[#02050B] border border-[#00F5D4]/40 rounded-sm text-[#00F5D4] text-xs">
+                {trainerMessage}
+              </div>
+            )}
+
+            <form onSubmit={handleAddTrainer} className="flex gap-2">
+              <input
+                type="text"
+                placeholder="Nombre del Coach"
+                value={newTrainerName}
+                onChange={(e) => setNewTrainerName(e.target.value)}
+                required
+                className="flex-1 py-2 px-3 bg-[#02050B] border border-[#0E1B2E] rounded-sm text-xs text-[#FFFFFF] focus:outline-none focus:border-[#00F5D4]"
+              />
+              <button
+                type="submit"
+                disabled={addingTrainer}
+                className="py-2 px-4 btn-cyan-gradient text-xs font-title tracking-wider uppercase rounded-sm transition flex items-center justify-center gap-1 shrink-0 cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5" /> {addingTrainer ? '...' : 'AGREGAR'}
+              </button>
+            </form>
+
+            <div className="space-y-1.5 pt-1">
+              <span className="text-[10px] font-title font-bold text-[#7A93B2] uppercase block tracking-wider">
+                COACHES ACTIVOS ({trainers.length})
+              </span>
+              {trainers.length === 0 ? (
+                <div className="p-3 bg-[#02050B] border border-[#0E1B2E] rounded-sm text-xs text-[#7A93B2] text-center">
+                  Sin entrenadores registrados. Agrega uno arriba.
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* 4. MEMBERSHIP PLANS MANAGEMENT (NAME & PRICE ONLY) */}
-      <div className="sharp-card rounded-sm p-4 md:p-6 space-y-5 border border-[#0E1B2E]">
-        <div className="border-b border-[#0E1B2E] pb-3">
-          <h3 className="font-title font-bold text-xs md:text-sm text-[#FFFFFF] tracking-wider uppercase flex items-center gap-2">
-            <CreditCard className="w-4 h-4 text-[#00F5D4]" />
-            PLANES DE MEMBRESÍA DEL GIMNASIO
-          </h3>
-          <p className="text-xs text-[#7A93B2] mt-0.5">
-            Configura los nombres y costos para que el bot de WhatsApp los presente en el flujo 2.
-          </p>
-        </div>
-
-        {planMessage && (
-          <div className="p-3 bg-[#02050B] border border-[#00F5D4]/40 rounded-sm text-[#00F5D4] text-xs">
-            {planMessage}
-          </div>
-        )}
-
-        <form onSubmit={handleAddPlan} className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <input
-            type="text"
-            placeholder="Nombre del Plan (Ej. Mensual, Trimestral)"
-            value={newPlanName}
-            onChange={(e) => setNewPlanName(e.target.value)}
-            required
-            className="py-2.5 px-3 bg-[#02050B] border border-[#0E1B2E] rounded-sm text-xs text-[#FFFFFF] focus:outline-none focus:border-[#00F5D4]"
-          />
-          <input
-            type="number"
-            step="0.01"
-            placeholder="Costo ($)"
-            value={newPlanPrice}
-            onChange={(e) => setNewPlanPrice(e.target.value)}
-            required
-            className="py-2.5 px-3 bg-[#02050B] border border-[#0E1B2E] rounded-sm text-xs text-[#FFFFFF] focus:outline-none focus:border-[#00F5D4]"
-          />
-          <button
-            type="submit"
-            disabled={addingPlan}
-            className="py-2.5 btn-cyan-gradient text-xs font-title tracking-wider uppercase rounded-sm transition flex items-center justify-center gap-1.5 cursor-pointer"
-          >
-            <Plus className="w-4 h-4" /> {addingPlan ? 'CREANDO...' : 'CREAR PLAN'}
-          </button>
-        </form>
-
-        <div className="space-y-2 pt-2">
-          <span className="text-xs font-title text-[#7A93B2] uppercase block">
-            PLANES ACTIVOS ({plans.length})
-          </span>
-          {plans.length === 0 ? (
-            <div className="p-4 bg-[#02050B] border border-[#0E1B2E] rounded-sm text-xs text-[#7A93B2] text-center">
-              No hay planes creados. Agrega un plan arriba.
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {plans.map((p) => (
-                <div
-                  key={p.id}
-                  className="bg-[#02050B] border border-[#0E1B2E] rounded-sm p-3 flex items-center justify-between"
-                >
-                  <div>
-                    <div className="font-bold text-xs text-[#FFFFFF]">{p.name}</div>
-                    <div className="text-xs text-[#00F5D4] font-mono">
-                      $ {Number(p.price).toFixed(2)}
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1">
+                  {trainers.map((t) => (
+                    <div
+                      key={t.id}
+                      className="bg-[#02050B] border border-[#0E1B2E] rounded-sm px-3 py-2 flex items-center justify-between"
+                    >
+                      <span className="font-bold text-xs text-[#FFFFFF] truncate">{t.name}</span>
+                      <button
+                        onClick={() => handleDeleteTrainer(t.id)}
+                        className="p-1 text-rose-400 hover:text-rose-300 hover:bg-rose-950/30 rounded-sm transition cursor-pointer"
+                        title="Eliminar Entrenador"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
                     </div>
-                  </div>
-                  <button
-                    onClick={() => handleDeletePlan(p.id)}
-                    className="p-1.5 text-rose-400 hover:text-rose-300 hover:bg-rose-950/30 rounded-sm transition cursor-pointer"
-                    title="Eliminar Plan"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  ))}
                 </div>
-              ))}
+              )}
             </div>
-          )}
+          </div>
+
+          {/* 5. MEMBERSHIP PLANS */}
+          <div className="sharp-card rounded-sm p-5 md:p-6 space-y-4 border border-[#0E1B2E]">
+            <div className="border-b border-[#0E1B2E] pb-3">
+              <h3 className="font-title font-bold text-xs md:text-sm text-[#FFFFFF] tracking-wider uppercase flex items-center gap-2">
+                <CreditCard className="w-4 h-4 text-[#00F5D4]" />
+                PLANES DE MEMBRESÍA
+              </h3>
+              <p className="text-[11px] text-[#7A93B2] mt-0.5">
+                Planes que se ofrecen en los pagos por WhatsApp.
+              </p>
+            </div>
+
+            {planMessage && (
+              <div className="p-2.5 bg-[#02050B] border border-[#00F5D4]/40 rounded-sm text-[#00F5D4] text-xs">
+                {planMessage}
+              </div>
+            )}
+
+            <form onSubmit={handleAddPlan} className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <input
+                type="text"
+                placeholder="Nombre del Plan"
+                value={newPlanName}
+                onChange={(e) => setNewPlanName(e.target.value)}
+                required
+                className="sm:col-span-1 py-2 px-3 bg-[#02050B] border border-[#0E1B2E] rounded-sm text-xs text-[#FFFFFF] focus:outline-none focus:border-[#00F5D4]"
+              />
+              <input
+                type="number"
+                step="0.01"
+                placeholder="Costo ($)"
+                value={newPlanPrice}
+                onChange={(e) => setNewPlanPrice(e.target.value)}
+                required
+                className="sm:col-span-1 py-2 px-3 bg-[#02050B] border border-[#0E1B2E] rounded-sm text-xs text-[#FFFFFF] focus:outline-none focus:border-[#00F5D4]"
+              />
+              <button
+                type="submit"
+                disabled={addingPlan}
+                className="py-2 btn-cyan-gradient text-xs font-title tracking-wider uppercase rounded-sm transition flex items-center justify-center gap-1 cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5" /> {addingPlan ? '...' : 'CREAR'}
+              </button>
+            </form>
+
+            <div className="space-y-1.5 pt-1">
+              <span className="text-[10px] font-title font-bold text-[#7A93B2] uppercase block tracking-wider">
+                PLANES ACTIVOS ({plans.length})
+              </span>
+              {plans.length === 0 ? (
+                <div className="p-3 bg-[#02050B] border border-[#0E1B2E] rounded-sm text-xs text-[#7A93B2] text-center">
+                  Sin planes creados. Agrega un plan arriba.
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1">
+                  {plans.map((p) => (
+                    <div
+                      key={p.id}
+                      className="bg-[#02050B] border border-[#0E1B2E] rounded-sm px-3 py-2 flex items-center justify-between"
+                    >
+                      <div className="min-w-0 pr-2">
+                        <div className="font-bold text-xs text-[#FFFFFF] truncate">{p.name}</div>
+                        <div className="text-[11px] text-[#00F5D4] font-mono">
+                          $ {Number(p.price).toFixed(2)}
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => handleDeletePlan(p.id)}
+                        className="p-1 text-rose-400 hover:text-rose-300 hover:bg-rose-950/30 rounded-sm transition cursor-pointer shrink-0"
+                        title="Eliminar Plan"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
         </div>
+
       </div>
-
-      {/* 5. REFERRAL PERCENTAGES & PARAMETERS */}
-      {configMessage && (
-        <div className="p-4 bg-[#02050B] border border-[#00F5D4]/40 rounded-sm text-[#FFFFFF] text-sm flex items-center gap-2">
-          <CheckCircle className="w-4 h-4 text-[#00F5D4]" /> {configMessage}
-        </div>
-      )}
-
-      <form
-        onSubmit={handleSaveConfig}
-        className="sharp-card rounded-sm p-4 md:p-6 space-y-5 border border-[#0E1B2E]"
-      >
-        <div className="border-b border-[#0E1B2E] pb-3">
-          <h3 className="font-title font-bold text-xs md:text-sm text-[#FFFFFF] tracking-wider uppercase">
-            COMISIONES POR REFERIDO & PARÁMETROS
-          </h3>
-          <p className="text-xs text-[#7A93B2] mt-0.5">
-            Configura las comisiones por referido para mensualidad, tienda retail e inactividad.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-xs font-title font-bold text-[#FFFFFF] tracking-wider mb-1">
-              COMISIÓN POR MENSUALIDAD GYM (%)
-            </label>
-            <input
-              type="number"
-              step="0.01"
-              min="0"
-              max="100"
-              value={commPct}
-              onChange={(e) => setCommPct(e.target.value)}
-              required
-              className="w-full py-3 px-4 bg-[#02050B] border border-[#0E1B2E] rounded-sm text-[#FFFFFF] text-sm focus:outline-none focus:border-[#00F5D4]"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-title font-bold text-[#FFFFFF] tracking-wider mb-1">
-              COMISIÓN POR TIENDA RETAIL (%)
-            </label>
-            <input
-              type="number"
-              step="0.01"
-              min="0"
-              max="100"
-              value={storeCommPct}
-              onChange={(e) => setStoreCommPct(e.target.value)}
-              required
-              className="w-full py-3 px-4 bg-[#02050B] border border-[#0E1B2E] rounded-sm text-[#FFFFFF] text-sm focus:outline-none focus:border-[#00F5D4]"
-            />
-          </div>
-          <div className="sm:col-span-2">
-            <label className="block text-xs font-title font-bold text-[#FFFFFF] tracking-wider mb-1">
-              UMBRAL DÍAS INACTIVIDAD ("TE EXTRAÑAMOS")
-            </label>
-            <input
-              type="number"
-              min="1"
-              max="365"
-              value={inactivityDays}
-              onChange={(e) => setInactivityDays(e.target.value)}
-              required
-              className="w-full py-3 px-4 bg-[#02050B] border border-[#0E1B2E] rounded-sm text-[#FFFFFF] text-sm focus:outline-none focus:border-[#00F5D4]"
-            />
-          </div>
-        </div>
-
-        <button
-          type="submit"
-          disabled={configSaving}
-          className="w-full py-3.5 btn-cyan-gradient font-bold text-xs font-title tracking-wider uppercase rounded-sm transition cursor-pointer"
-        >
-          {configSaving ? 'GUARDANDO CAMBIOS...' : 'GUARDAR CONFIGURACIÓN GENERAL'}
-        </button>
-      </form>
     </div>
   );
 }
