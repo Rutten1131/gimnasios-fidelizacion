@@ -21,7 +21,7 @@ export async function GET(request: Request) {
       // Dynamic host detection for production / Vercel
       let webhookUrl = WEBHOOK_URL;
       if (!webhookUrl) {
-        const host = request.headers.get('host') || 'fidelizacion-gym.vercel.app';
+        const host = request.headers.get('host') || 'gimnasios-fidelizacion.vercel.app';
         const protocol = host.includes('localhost') ? 'http' : 'https';
         webhookUrl = `${protocol}://${host}/api/webhook/whatsapp`;
       }
