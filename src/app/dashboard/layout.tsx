@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   Users,
-  Star,
+  Trophy,
   Wallet,
   Sliders,
   LogOut,
@@ -68,9 +68,9 @@ export default function DashboardLayout({
 
   const allNavItems = [
     { href: '/dashboard', icon: Users, label: 'RESUMEN GENERAL', shortLabel: 'Resumen', key: 'showOverviewTab' },
-    { href: '/dashboard/evaluaciones', icon: Star, label: 'EVALUACIONES & CLIENTES', shortLabel: 'Clientes', key: 'showEvaluationsTab' },
-    { href: '/dashboard/billetera', icon: Wallet, label: 'BILLETERA & CANJES', shortLabel: 'Billetera', key: 'showWalletTab' },
-    { href: '/dashboard/configuracion', icon: Sliders, label: 'CONFIGURACIÓN', shortLabel: 'Config', key: 'showConfigTab' },
+    { href: '/dashboard/evaluaciones', icon: Trophy, label: 'LIGA DE PERFORMANCE', shortLabel: 'Liga', key: 'showEvaluationsTab' },
+    { href: '/dashboard/billetera', icon: Wallet, label: 'BILLETERA FINTECH', shortLabel: 'Billetera', key: 'showWalletTab' },
+    { href: '/dashboard/configuracion', icon: Sliders, label: 'CENTRO DE MANDO', shortLabel: 'Mando', key: 'showConfigTab' },
   ];
 
   const navItems = allNavItems.filter((item) => {
@@ -83,18 +83,18 @@ export default function DashboardLayout({
 
   if (data?.tenant && data.tenant.isActive === false) {
     return (
-      <div className="min-h-screen bg-[#02050B] text-[#FFFFFF] flex items-center justify-center p-4">
-        <div className="sharp-panel p-8 text-center max-w-md space-y-4 border border-rose-800/60">
-          <div className="w-12 h-12 bg-rose-950/60 border border-rose-800 rounded-sm flex items-center justify-center text-rose-300 mx-auto">
+      <div className="min-h-screen bg-[#03080F] text-[#FFFFFF] flex items-center justify-center p-4">
+        <div className="tactical-card p-8 text-center max-w-md space-y-4 border border-rose-800/60">
+          <div className="w-12 h-12 bg-rose-950/60 border border-rose-800 rounded-2xl flex items-center justify-center text-rose-300 mx-auto">
             <X className="w-6 h-6" />
           </div>
-          <h2 className="font-title text-lg font-bold text-rose-300">CUENTA TEMPORALMENTE PAUSADA</h2>
-          <p className="text-xs text-[#7A93B2]">
+          <h2 className="font-display text-lg text-rose-300">CUENTA TEMPORALMENTE PAUSADA</h2>
+          <p className="text-xs text-[#8AA4C4]">
             El acceso a esta cuenta ha sido pausado por la administración. Por favor comuníquese con soporte para reactivar su servicio.
           </p>
           <button
             onClick={handleLogout}
-            className="px-4 py-2 bg-[#060D18] hover:bg-[#0E1B2E] border border-[#0E1B2E] text-[#FFFFFF] text-xs font-semibold rounded-sm transition cursor-pointer"
+            className="px-4 py-2 btn-tactical-outline text-xs font-semibold rounded-xl cursor-pointer"
           >
             Volver al Inicio
           </button>
@@ -105,18 +105,18 @@ export default function DashboardLayout({
 
   if (isCurrentTabDisabled) {
     return (
-      <div className="min-h-screen bg-[#02050B] text-[#FFFFFF] flex items-center justify-center p-4">
-        <div className="sharp-panel p-8 text-center max-w-md space-y-4 border border-amber-800/60">
-          <div className="w-12 h-12 bg-amber-950/60 border border-amber-800 rounded-sm flex items-center justify-center text-amber-300 mx-auto">
+      <div className="min-h-screen bg-[#03080F] text-[#FFFFFF] flex items-center justify-center p-4">
+        <div className="tactical-card p-8 text-center max-w-md space-y-4 border border-amber-800/60">
+          <div className="w-12 h-12 bg-amber-950/60 border border-amber-800 rounded-2xl flex items-center justify-center text-amber-300 mx-auto">
             <Sliders className="w-6 h-6" />
           </div>
-          <h2 className="font-title text-lg font-bold text-amber-300">PESTAÑA NO INCLUIDA EN TU PLAN</h2>
-          <p className="text-xs text-[#7A93B2]">
+          <h2 className="font-display text-lg text-amber-300">SECCIÓN NO DISPONIBLE EN TU PLAN</h2>
+          <p className="text-xs text-[#8AA4C4]">
             Esta sección ha sido desactivada para tu cuenta. Contacta al Administrador para habilitar esta funcionalidad.
           </p>
           <Link
             href={navItems[0]?.href || '/dashboard'}
-            className="px-4 py-2 bg-[#00F5D4] text-[#02050B] font-bold text-xs font-title tracking-wider uppercase rounded-sm transition inline-block glow-cyan"
+            className="px-4 py-2 btn-tactical-cyan text-xs font-title tracking-wider uppercase rounded-xl inline-block"
           >
             Ir a Sección Disponible
           </Link>
@@ -127,15 +127,15 @@ export default function DashboardLayout({
 
   return (
     <DashboardContext.Provider value={{ data, loading, refreshData: loadData }}>
-      <div className="min-h-screen bg-[#02050B] text-[#FFFFFF] flex flex-col font-sans">
+      <div className="min-h-screen bg-[#03080F] text-[#FFFFFF] flex flex-col font-sans">
 
-        {/* ── HEADER ──────────────────────────────────────────── */}
-        <header className="bg-[#060D18] border-b border-[#0E1B2E] px-4 md:px-6 py-3 flex items-center justify-between sticky top-0 z-30">
+        {/* ── HEADER TÁCTICO VIP ──────────────────────────────── */}
+        <header className="bg-[#05101C]/90 backdrop-blur-md border-b border-[#0E1B2E] px-4 md:px-6 py-3.5 flex items-center justify-between sticky top-0 z-30">
           <div className="flex items-center gap-3">
             {/* Hamburger — desktop only */}
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="p-2 text-[#7A93B2] hover:text-[#FFFFFF] bg-[#02050B] hover:bg-[#0E1B2E] border border-[#0E1B2E] rounded-sm transition hidden md:flex items-center justify-center gap-2 cursor-pointer"
+              className="p-2 text-[#8AA4C4] hover:text-[#FFFFFF] bg-[#03080F] hover:bg-[#0E1B2E] border border-[#0E1B2E] rounded-xl transition hidden md:flex items-center justify-center gap-2 cursor-pointer"
               title="Menú de Navegación"
             >
               {sidebarOpen ? <X className="w-5 h-5 text-[#00F5D4]" /> : <Menu className="w-5 h-5 text-[#00F5D4]" />}
@@ -144,11 +144,11 @@ export default function DashboardLayout({
 
             {/* Brand */}
             <div className="flex items-center gap-2.5">
-              <div className="h-9 px-2 bg-[#02050B] border border-[#00F5D4]/30 rounded-sm flex items-center justify-center glow-cyan">
-                <img src="/branding/logo_main.png" alt="ALL-crm" className="h-7 object-contain" />
+              <div className="h-9 px-2.5 bg-[#03080F] border border-[#00F5D4]/30 rounded-xl flex items-center justify-center glow-cyan">
+                <img src="/branding/logo_main.png" alt="ALL-crm" className="h-6 object-contain" />
               </div>
               <div className="flex flex-col">
-                <span className="font-title text-sm md:text-base font-bold text-gradient-cyan tracking-wider leading-tight">
+                <span className="font-display text-sm md:text-base text-gradient-cyan tracking-wider leading-tight">
                   ALL-crm
                 </span>
                 <span className="text-[10px] text-[#00F5D4] font-mono font-semibold truncate max-w-[130px] md:max-w-none">
@@ -161,7 +161,7 @@ export default function DashboardLayout({
           {/* Logout button */}
           <button
             onClick={handleLogout}
-            className="flex items-center gap-2 px-3.5 py-2 bg-[#02050B] hover:bg-rose-950/40 border border-[#0E1B2E] hover:border-rose-800/60 text-[#7A93B2] hover:text-rose-300 text-xs font-semibold rounded-sm transition cursor-pointer"
+            className="flex items-center gap-2 px-3.5 py-2 bg-[#03080F] hover:bg-rose-950/40 border border-[#0E1B2E] hover:border-rose-800/60 text-[#8AA4C4] hover:text-rose-300 text-xs font-semibold rounded-xl transition cursor-pointer"
           >
             <LogOut className="w-4 h-4 text-rose-400" />
             <span className="hidden md:inline font-title tracking-wider text-[11px] uppercase">Cerrar Sesión</span>
@@ -171,11 +171,11 @@ export default function DashboardLayout({
         {/* ── BODY ────────────────────────────────────────────── */}
         <div className="flex flex-1 relative min-h-0">
 
-          {/* Desktop Sidebar with ample width */}
+          {/* Desktop Sidebar Táctico */}
           {sidebarOpen && (
-            <aside className="w-64 lg:w-72 bg-[#02050B] border-r border-[#0E1B2E] p-4 space-y-1.5 shrink-0 hidden md:block">
-              <div className="px-3 py-2 text-[10px] font-title font-bold uppercase tracking-widest text-[#7A93B2]/60">
-                Navegación
+            <aside className="w-64 lg:w-72 bg-[#03080F]/95 backdrop-blur-md border-r border-[#0E1B2E] p-4 space-y-2 shrink-0 hidden md:block">
+              <div className="px-3 py-1.5 text-[10px] font-title font-bold uppercase tracking-widest text-[#8AA4C4]/50">
+                Navegación Táctica
               </div>
               {navItems.map((item) => {
                 const isActive = pathname === item.href;
@@ -183,13 +183,13 @@ export default function DashboardLayout({
                   <Link
                     key={item.href}
                     href={item.href}
-                    className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-sm text-xs font-semibold transition tracking-wider font-title cursor-pointer ${
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold transition tracking-wider font-title cursor-pointer ${
                       isActive
-                        ? 'bg-[#060D18] text-[#FFFFFF] border-l-2 border-l-[#00F5D4] border-t border-r border-b border-[#0E1B2E] glow-cyan'
-                        : 'text-[#7A93B2] hover:bg-[#060D18]/70 hover:text-[#FFFFFF]'
+                        ? 'bg-gradient-to-r from-[#07192C] to-[#040F1B] text-[#FFFFFF] border-l-3 border-[#00F5D4] border-t border-r border-b border-[#00F5D4]/25 glow-cyan'
+                        : 'text-[#8AA4C4] hover:bg-[#05101C] hover:text-[#FFFFFF]'
                     }`}
                   >
-                    <item.icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-[#00F5D4]' : 'text-[#7A93B2]'}`} />
+                    <item.icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-[#00F5D4]' : 'text-[#8AA4C4]'}`} />
                     <span className="truncate">{item.label}</span>
                   </Link>
                 );
@@ -206,7 +206,7 @@ export default function DashboardLayout({
         </div>
 
         {/* ── MOBILE BOTTOM NAV BAR ───────────────────────────── */}
-        <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#060D18] border-t border-[#0E1B2E] flex items-stretch">
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#05101C]/95 backdrop-blur-md border-t border-[#0E1B2E] flex items-stretch">
           {navItems.map((item) => {
             const isActive = pathname === item.href;
             return (
@@ -215,18 +215,18 @@ export default function DashboardLayout({
                 href={item.href}
                 className={`flex-1 flex flex-col items-center justify-center gap-1 py-3 px-1 text-[9px] font-title font-bold tracking-wide transition border-t-2 ${
                   isActive
-                    ? 'text-[#00F5D4] border-[#00F5D4] bg-[#02050B]'
-                    : 'text-[#7A93B2] hover:text-[#FFFFFF] border-transparent'
+                    ? 'text-[#00F5D4] border-[#00F5D4] bg-[#03080F]'
+                    : 'text-[#8AA4C4] hover:text-[#FFFFFF] border-transparent'
                 }`}
               >
-                <item.icon className={`w-5 h-5 ${isActive ? 'text-[#00F5D4]' : 'text-[#7A93B2]'}`} />
+                <item.icon className={`w-5 h-5 ${isActive ? 'text-[#00F5D4]' : 'text-[#8AA4C4]'}`} />
                 <span className="truncate w-full text-center leading-tight">{item.shortLabel}</span>
               </Link>
             );
           })}
           <button
             onClick={handleLogout}
-            className="flex-1 flex flex-col items-center justify-center gap-1 py-3 px-1 text-[9px] font-title font-bold tracking-wide text-[#7A93B2] hover:text-rose-300 border-t-2 border-transparent transition"
+            className="flex-1 flex flex-col items-center justify-center gap-1 py-3 px-1 text-[9px] font-title font-bold tracking-wide text-[#8AA4C4] hover:text-rose-300 border-t-2 border-transparent transition"
           >
             <LogOut className="w-5 h-5 text-rose-400" />
             <span>Salir</span>

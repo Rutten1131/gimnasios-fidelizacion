@@ -1,14 +1,14 @@
 @import "tailwindcss";
 
 :root {
-  --bg-app: #02050B;
-  --bg-card: #060D18;
-  --border-card: #0E1B2E;
+  --bg-app: #03080F;
+  --bg-card: #05101C;
+  --border-card: rgba(0, 245, 212, 0.15);
   --text-main: #FFFFFF;
-  --text-muted: #7A93B2;
+  --text-muted: #8AA4C4;
   --accent-cyan: #00F5D4;
   --accent-teal: #00E5FF;
-  --accent-emerald: #10B981;
+  --accent-gold: #F59E0B;
 }
 
 @theme inline {
@@ -23,79 +23,123 @@
   --color-text-muted: var(--text-muted);
   --color-accent-cyan: var(--accent-cyan);
   --color-accent-teal: var(--accent-teal);
-  --color-accent-emerald: var(--accent-emerald);
+  --color-accent-gold: var(--accent-gold);
 }
 
 body {
   background-color: var(--bg-app);
   color: var(--text-main);
   font-family: var(--font-inter), sans-serif;
+  background-image: 
+    radial-gradient(circle at 15% 15%, rgba(0, 245, 212, 0.05) 0%, transparent 45%),
+    radial-gradient(circle at 85% 85%, rgba(0, 180, 216, 0.04) 0%, transparent 45%);
+  background-attachment: fixed;
+}
+
+.font-display {
+  font-family: var(--font-montserrat), sans-serif;
+  letter-spacing: 0.04em;
+  font-weight: 800;
 }
 
 .font-title {
   font-family: var(--font-montserrat), sans-serif;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
 }
 
 .font-number {
   font-family: var(--font-bebas), sans-serif;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
 }
 
-/* Sharp Dark Square Aesthetic Utilities */
-.sharp-panel {
-  background: rgba(6, 13, 24, 0.95);
-  border: 1px solid rgba(0, 245, 212, 0.2);
-  border-radius: 0px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
-}
-
-.sharp-card {
-  background: #060D18;
-  border: 1px solid #0E1B2E;
-  border-radius: 2px;
-  transition: all 0.15s ease-in-out;
-}
-
-.sharp-card:hover {
-  border-color: rgba(0, 245, 212, 0.4);
-  box-shadow: 0 0 15px -3px rgba(0, 245, 212, 0.15);
-}
-
-.glass-panel {
-  background: rgba(6, 13, 24, 0.9);
+/* Tactical Rounded Cards and Panels */
+.tactical-card {
+  background: linear-gradient(180deg, rgba(7, 21, 37, 0.85) 0%, rgba(3, 11, 20, 0.95) 100%);
+  border: 1px solid rgba(0, 245, 212, 0.16);
+  border-radius: 1.25rem;
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(0, 245, 212, 0.2);
-  border-radius: 2px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
 }
 
-.glass-card {
-  background: #060D18;
-  border: 1px solid #0E1B2E;
-  border-radius: 2px;
+.tactical-card:hover {
+  border-color: rgba(0, 245, 212, 0.4);
+  box-shadow: 0 10px 35px -5px rgba(0, 245, 212, 0.18);
+}
+
+.tactical-badge-gold {
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  color: #FBBF24;
+}
+
+.tactical-badge-cyan {
+  background: rgba(0, 245, 212, 0.12);
+  border: 1px solid rgba(0, 245, 212, 0.4);
+  color: #00F5D4;
+}
+
+.tactical-badge-green {
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  color: #34D399;
 }
 
 .glow-cyan {
-  box-shadow: 0 0 15px -2px rgba(0, 245, 212, 0.3);
+  box-shadow: 0 0 20px -3px rgba(0, 245, 212, 0.35);
+}
+
+.glow-gold {
+  box-shadow: 0 0 20px -3px rgba(245, 158, 11, 0.35);
 }
 
 .text-gradient-cyan {
-  background: linear-gradient(135deg, #FFFFFF 0%, #00F5D4 70%, #00E5FF 100%);
+  background: linear-gradient(135deg, #FFFFFF 0%, #00F5D4 65%, #00E5FF 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-.btn-cyan-gradient {
+.btn-tactical-cyan {
   background: linear-gradient(135deg, #00F5D4 0%, #00B4D8 100%);
   color: #02050B;
   font-weight: 700;
-  border-radius: 2px;
-  box-shadow: 0 2px 10px rgba(0, 245, 212, 0.25);
-  transition: all 0.15s ease;
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 15px rgba(0, 245, 212, 0.3);
+  transition: all 0.2s ease;
 }
 
-.btn-cyan-gradient:hover {
-  filter: brightness(1.1);
-  box-shadow: 0 4px 15px rgba(0, 245, 212, 0.4);
+.btn-tactical-cyan:hover {
+  filter: brightness(1.12);
+  box-shadow: 0 6px 20px rgba(0, 245, 212, 0.45);
+  transform: translateY(-1px);
+}
+
+.btn-tactical-outline {
+  background: rgba(5, 16, 28, 0.7);
+  border: 1px solid rgba(0, 245, 212, 0.35);
+  color: #00F5D4;
+  border-radius: 0.75rem;
+  transition: all 0.2s ease;
+}
+
+.btn-tactical-outline:hover {
+  background: rgba(0, 245, 212, 0.12);
+  border-color: #00F5D4;
+  color: #FFFFFF;
+}
+
+/* Custom Scrollbar for Tactical Feeds */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(3, 8, 15, 0.6);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 245, 212, 0.2);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 245, 212, 0.45);
 }

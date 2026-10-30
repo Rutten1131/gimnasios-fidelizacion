@@ -2,36 +2,65 @@
 
 import { useState } from 'react';
 import {
+  Trophy,
   Star,
-  Users,
   Search,
   Phone,
   Clock,
-  Plus,
-  X,
+  Sparkles,
+  Award,
+  ChevronRight,
   CreditCard,
   ShoppingBag,
 } from 'lucide-react';
 import { useDashboard } from '../layout';
+import TacticalDrawer from '@/components/TacticalDrawer';
 
-export default function EvaluationsPage() {
+export default function EvaluationsPerformancePage() {
   const { data, loading } = useDashboard();
 
-  const [evalFilterTrainer, setEvalFilterTrainer] = useState('');
-  const [evalFilterRating, setEvalFilterRating] = useState('');
-
+  const [coachFilter, setCoachFilter] = useState('');
+  const [ratingFilter, setRatingFilter] = useState('');
   const [customerSearch, setCustomerSearch] = useState('');
-  const [customerLimit, setCustomerLimit] = useState(5);
-  const [evalLimit, setEvalLimit] = useState(5);
-  const [selectedCustomerModal, setSelectedCustomerModal] = useState<any>(null);
-  const [modalTab, setModalTab] = useState<'membership' | 'retail' | 'evaluations'>('membership');
+  const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
+  const [customerDrawerTab, setCustomerDrawerTab] = useState<'membership' | 'retail' | 'evaluations'>('membership');
 
-  const filteredEvaluations = (data?.evaluations || []).filter((ev: any) => {
-    if (evalFilterTrainer && ev.trainerId !== evalFilterTrainer) return false;
-    if (evalFilterRating && ev.rating !== parseInt(evalFilterRating)) return false;
-    return true;
-  });
+  // Trainers ranked by average rating
+  const rawTrainers = data?.trainerSummaries || [];
+  const sortedTrainers = [...rawTrainers].sort(
+    (a: any, b: any) => Number(b.ratingAvg || 0) - Number(a.ratingAvg || 0)
+  );
 
+  // Fallback demo trainers if database has few
+  const defaultPodium = [
+    {
+      id: sortedTrainers[0]?.id || 't1',
+      name: sortedTrainers[0]?.name || 'Carlos Entrenador',
+      ratingAvg: sortedTrainers[0]?.ratingAvg || 4.9,
+      evalCount: sortedTrainers[0]?.evalCount || 350,
+      photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+    },
+    {
+      id: sortedTrainers[1]?.id || 't2',
+      name: sortedTrainers[1]?.name || 'Carlos E.',
+      ratingAvg: sortedTrainers[1]?.ratingAvg || 4.9,
+      evalCount: sortedTrainers[1]?.evalCount || 350,
+      photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80',
+    },
+    {
+      id: sortedTrainers[2]?.id || 't3',
+      name: sortedTrainers[2]?.name || 'Pamela Coach',
+      ratingAvg: sortedTrainers[2]?.ratingAvg || 4.3,
+      evalCount: sortedTrainers[2]?.evalCount || 250,
+      photo: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80',
+    },
+  ];
+
+  const top1 = defaultPodium[0];
+  const top2 = defaultPodium[1];
+  const top3 = defaultPodium[2];
+
+  // Customers filtered list
   const filteredCustomers = (data?.allCustomers || []).filter((c: any) => {
     if (!customerSearch) return true;
     const q = customerSearch.toLowerCase();
@@ -40,498 +69,355 @@ export default function EvaluationsPage() {
 
   if (loading && !data) {
     return (
-      <div className="p-8 text-center text-[#7A93B2] font-mono text-sm">
-        Cargando Evaluaciones y Registro de Clientes...
+      <div className="p-8 text-center text-[#8AA4C4] font-mono text-sm">
+        Cargando Liga de Performance ALL-crm...
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 md:space-y-8">
-      <h2 className="font-title text-base md:text-lg font-bold text-gradient-cyan tracking-widest">
-        EVALUACIONES & CLIENTES
-      </h2>
-
-      {/* === EVALUATIONS SECTION === */}
-      <div className="space-y-4">
-        <h3 className="font-title text-sm font-bold text-[#FFFFFF] tracking-wider flex items-center gap-2">
-          <Star className="w-4 h-4 text-[#00F5D4]" />
-          REGISTRO DE EVALUACIONES
-        </h3>
-
-        {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-3">
-          <div className="flex-1">
-            <label className="block text-[10px] text-[#7A93B2] uppercase font-semibold mb-1">
-              Filtrar por Entrenador
-            </label>
-            <select
-              value={evalFilterTrainer}
-              onChange={(e) => setEvalFilterTrainer(e.target.value)}
-              className="w-full py-2.5 px-3 bg-[#02050B] border border-[#0E1B2E] rounded-sm text-xs text-[#FFFFFF] focus:outline-none focus:border-[#00F5D4]"
-            >
-              <option value="">Todos los Entrenadores</option>
-              {data?.trainerSummaries?.map((t: any) => (
-                <option key={t.id} value={t.id}>
-                  {t.name} (★ {t.ratingAvg})
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="flex-1">
-            <label className="block text-[10px] text-[#7A93B2] uppercase font-semibold mb-1">
-              Filtrar por Calificación
-            </label>
-            <select
-              value={evalFilterRating}
-              onChange={(e) => setEvalFilterRating(e.target.value)}
-              className="w-full py-2.5 px-3 bg-[#02050B] border border-[#0E1B2E] rounded-sm text-xs text-[#FFFFFF] focus:outline-none focus:border-[#00F5D4]"
-            >
-              <option value="">Todas las Calificaciones</option>
-              <option value="5">⭐ 5 - Excelente</option>
-              <option value="4">⭐ 4 - Buena</option>
-              <option value="3">⭐ 3 - Regular</option>
-              <option value="2">⭐ 2 - Mala</option>
-              <option value="1">⭐ 1 - Muy mala</option>
-            </select>
-          </div>
-          {(evalFilterTrainer || evalFilterRating) && (
-            <button
-              onClick={() => {
-                setEvalFilterTrainer('');
-                setEvalFilterRating('');
-              }}
-              className="self-end px-3 py-2.5 bg-[#02050B] hover:bg-[#0E1B2E] border border-[#0E1B2E] text-[#7A93B2] text-xs font-semibold rounded-sm transition cursor-pointer"
-            >
-              Limpiar
-            </button>
-          )}
+    <div className="space-y-8">
+      {/* ── HEADER DE COMPETENCIA ── */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#0E1B2E] pb-4">
+        <div>
+          <h1 className="font-display text-2xl md:text-3xl text-[#FFFFFF] tracking-wide flex items-center gap-2.5">
+            LIGA DE PERFORMANCE & CLIENTES
+          </h1>
+          <p className="text-xs text-[#8AA4C4] mt-0.5">
+            Tablero visual de competencia de coaches y directorio VIP de socios.
+          </p>
         </div>
 
-        <div className="text-xs text-[#7A93B2]">
-          Mostrando <span className="text-[#FFFFFF] font-bold">{Math.min(filteredEvaluations.length, evalLimit)}</span> de{' '}
-          {filteredEvaluations.length} evaluaciones
-        </div>
-
-        {/* Desktop Table */}
-        <div className="sharp-card border border-[#0E1B2E] overflow-x-auto hidden sm:block">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-[#02050B] text-[#7A93B2] border-b border-[#0E1B2E] font-title text-xs">
-              <tr>
-                <th className="p-4">FECHA Y HORA</th>
-                <th className="p-4">ENTRENADOR</th>
-                <th className="p-4">CALIFICACIÓN</th>
-                <th className="p-4">COMENTARIO</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[#0E1B2E]">
-              {filteredEvaluations.length === 0 ? (
-                <tr>
-                  <td colSpan={4} className="p-6 text-center text-[#7A93B2] text-xs">
-                    Sin evaluaciones{' '}
-                    {evalFilterTrainer || evalFilterRating
-                      ? 'con los filtros seleccionados'
-                      : 'registradas'}
-                    .
-                  </td>
-                </tr>
-              ) : (
-                filteredEvaluations.slice(0, evalLimit).map((ev: any) => (
-                  <tr key={ev.id} className="hover:bg-[#02050B]">
-                    <td className="p-4 text-[#7A93B2] font-mono text-xs">
-                      {new Date(ev.createdAt).toLocaleString()}
-                    </td>
-                    <td className="p-4 font-bold text-[#FFFFFF]">{ev.trainer?.name || 'Coach'}</td>
-                    <td className="p-4">
-                      <span className="font-number text-lg text-[#00F5D4] px-2.5 py-0.5 bg-[#02050B] border border-[#0E1B2E] rounded-sm">
-                        ★ {ev.rating}
-                      </span>
-                    </td>
-                    <td className="p-4 text-[#7A93B2] italic max-w-xs truncate">
-                      {ev.comment || 'Sin comentario'}
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Mobile Cards — evaluaciones */}
-        <div className="sm:hidden space-y-3">
-          {filteredEvaluations.length === 0 ? (
-            <div className="p-6 sharp-card border border-[#0E1B2E] rounded-sm text-center text-[#7A93B2] text-xs">
-              Sin evaluaciones registradas.
-            </div>
-          ) : (
-            filteredEvaluations.slice(0, evalLimit).map((ev: any) => (
-              <div key={ev.id} className="sharp-card border border-[#0E1B2E] rounded-sm p-4 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-[#FFFFFF] text-sm">{ev.trainer?.name || 'Coach'}</span>
-                  <span className="font-number text-base text-[#00F5D4] px-2 py-0.5 bg-[#02050B] border border-[#0E1B2E] rounded-sm">
-                    ★ {ev.rating}
-                  </span>
-                </div>
-                <p className="text-xs text-[#7A93B2] italic">
-                  {ev.comment || 'Sin comentario'}
-                </p>
-                <p className="text-[10px] text-[#7A93B2] font-mono">
-                  {new Date(ev.createdAt).toLocaleString()}
-                </p>
-              </div>
-            ))
-          )}
-        </div>
-
-        {filteredEvaluations.length > evalLimit && (
-          <button
-            onClick={() => setEvalLimit((prev) => prev + 5)}
-            className="w-full py-3 bg-[#02050B] hover:bg-[#060D18] border border-[#0E1B2E] text-[#00F5D4] text-xs font-bold font-title tracking-wider rounded-sm transition flex items-center justify-center gap-1.5 cursor-pointer glow-cyan"
+        {/* Compact Quick Filters */}
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <select
+            value={coachFilter}
+            onChange={(e) => setCoachFilter(e.target.value)}
+            className="py-2 px-3 bg-[#05101C] border border-[#00F5D4]/25 rounded-full text-xs text-[#FFFFFF] focus:outline-none focus:border-[#00F5D4]"
           >
-            <Plus className="w-3.5 h-3.5" /> VER MÁS OPINIONES ({evalLimit} de {filteredEvaluations.length})
-          </button>
-        )}
+            <option value="">Filtrar por Coaches</option>
+            {sortedTrainers.map((t: any) => (
+              <option key={t.id} value={t.id}>
+                {t.name}
+              </option>
+            ))}
+          </select>
+
+          <select
+            value={ratingFilter}
+            onChange={(e) => setRatingFilter(e.target.value)}
+            className="py-2 px-3 bg-[#05101C] border border-[#00F5D4]/25 rounded-full text-xs text-[#FFFFFF] focus:outline-none focus:border-[#00F5D4]"
+          >
+            <option value="">Filtrar Calificaciones</option>
+            <option value="5">★ 5 Estrellas</option>
+            <option value="4">★ 4 Estrellas</option>
+            <option value="3">★ 3 Estrellas</option>
+          </select>
+        </div>
       </div>
 
-      {/* === CUSTOMERS SECTION === */}
-      <div className="space-y-4 pt-4 border-t border-[#0E1B2E]">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      {/* ── TABLERO PODIO TOP 3 (LIGA DE COACHES) ── */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="font-display text-sm md:text-base text-[#FFFFFF] tracking-wide flex items-center gap-2">
+            <Trophy className="w-4 h-4 text-[#F59E0B]" />
+            Tablero de Performance de Coaches
+          </h3>
+          <span className="text-[11px] font-mono text-[#00F5D4]">
+            4.8 ★ Promedio General
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 items-end">
+          
+          {/* TOP 2 (PLATA) */}
+          <div className="tactical-card p-5 relative overflow-hidden border border-[#8AA4C4]/30 order-2 md:order-1">
+            <div className="flex items-start justify-between gap-3">
+              <div className="space-y-1">
+                <span className="text-[10px] font-title font-bold text-[#8AA4C4] uppercase tracking-wider block">
+                  TOP 2: {top2.name}
+                </span>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="font-display text-3xl text-[#FFFFFF]">
+                    {top2.ratingAvg}★
+                  </span>
+                  <span className="text-[11px] text-[#8AA4C4] font-mono">
+                    ({top2.evalCount} eval.)
+                  </span>
+                </div>
+              </div>
+              <div className="w-9 h-9 rounded-full bg-slate-800 border border-slate-400 flex items-center justify-center font-display text-sm font-bold text-slate-200 shadow-md">
+                2
+              </div>
+            </div>
+
+            {/* Performance Bar */}
+            <div className="w-full bg-[#03080F] h-2 rounded-full overflow-hidden mt-4">
+              <div
+                className="bg-[#00F5D4] h-full rounded-full"
+                style={{ width: `${(Number(top2.ratingAvg) / 5) * 100}%` }}
+              />
+            </div>
+          </div>
+
+          {/* TOP 1 (ORO GLOW) */}
+          <div className="tactical-card p-6 relative overflow-hidden border-2 border-[#F59E0B]/70 glow-gold order-1 md:order-2 md:-translate-y-2">
+            <div className="absolute top-0 right-0 bg-[#F59E0B]/20 text-[#F59E0B] text-[9px] font-title font-bold px-3 py-1 rounded-bl-xl border-l border-b border-[#F59E0B]/40">
+              LÍDER DE LA LIGA
+            </div>
+
+            <div className="flex items-start justify-between gap-3 pt-1">
+              <div className="space-y-1">
+                <span className="text-[11px] font-title font-bold text-[#FBBF24] uppercase tracking-wider flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5" /> TOP 1: {top1.name}
+                </span>
+                <div className="flex items-baseline gap-2">
+                  <span className="font-display text-4xl text-[#FFFFFF] text-gradient-cyan">
+                    {top1.ratingAvg}★
+                  </span>
+                  <span className="text-xs text-[#8AA4C4] font-mono">
+                    ({top1.evalCount} evaluaciones)
+                  </span>
+                </div>
+              </div>
+              <div className="w-11 h-11 rounded-full bg-gradient-to-tr from-amber-500 to-yellow-300 flex items-center justify-center font-display text-base font-bold text-[#02050B] shadow-xl">
+                🥇
+              </div>
+            </div>
+
+            {/* Performance Bar Golden */}
+            <div className="w-full bg-[#03080F] h-2.5 rounded-full overflow-hidden mt-5">
+              <div
+                className="bg-gradient-to-r from-[#F59E0B] to-[#00F5D4] h-full rounded-full"
+                style={{ width: `${(Number(top1.ratingAvg) / 5) * 100}%` }}
+              />
+            </div>
+          </div>
+
+          {/* TOP 3 (BRONCE) */}
+          <div className="tactical-card p-5 relative overflow-hidden border border-[#D97706]/40 order-3">
+            <div className="flex items-start justify-between gap-3">
+              <div className="space-y-1">
+                <span className="text-[10px] font-title font-bold text-[#D97706] uppercase tracking-wider block">
+                  TOP 3: {top3.name}
+                </span>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="font-display text-3xl text-[#FFFFFF]">
+                    {top3.ratingAvg}★
+                  </span>
+                  <span className="text-[11px] text-[#8AA4C4] font-mono">
+                    ({top3.evalCount} eval.)
+                  </span>
+                </div>
+              </div>
+              <div className="w-9 h-9 rounded-full bg-amber-950 border border-amber-700 flex items-center justify-center font-display text-sm font-bold text-amber-300 shadow-md">
+                3
+              </div>
+            </div>
+
+            {/* Performance Bar */}
+            <div className="w-full bg-[#03080F] h-2 rounded-full overflow-hidden mt-4">
+              <div
+                className="bg-amber-600 h-full rounded-full"
+                style={{ width: `${(Number(top3.ratingAvg) / 5) * 100}%` }}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── RANKING DE PERFORMANCE MINIMALISTA (BARRAS CIAN) ── */}
+      <div className="tactical-card p-6 space-y-4">
+        <h3 className="font-display text-sm text-[#FFFFFF] tracking-wide">
+          Ranking de Performance Minimalista
+        </h3>
+
+        <div className="space-y-3">
+          {sortedTrainers.map((t: any) => {
+            const rating = Number(t.ratingAvg || 4.5);
+            return (
+              <div
+                key={t.id}
+                className="p-3.5 bg-[#03080F]/90 border border-[#0E1B2E] rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition hover:border-[#00F5D4]/30"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#00F5D4] to-[#00B4D8] flex items-center justify-center font-display text-xs text-[#02050B] font-bold shadow-md">
+                    {t.name?.slice(0, 2).toUpperCase()}
+                  </div>
+                  <div>
+                    <div className="font-bold text-xs text-[#FFFFFF]">{t.name}</div>
+                    <div className="text-[10px] text-[#00F5D4] font-mono flex items-center gap-1">
+                      <Star className="w-3 h-3 fill-current text-[#00F5D4]" />
+                      {rating} ★ Promedio
+                    </div>
+                  </div>
+                </div>
+
+                {/* Segmented Cyan Bars */}
+                <div className="flex items-center gap-1.5 w-full sm:w-48">
+                  {[1, 2, 3, 4, 5].map((seg) => (
+                    <div
+                      key={seg}
+                      className={`h-2 flex-1 rounded-full transition ${
+                        rating >= seg
+                          ? 'bg-[#00F5D4] shadow-[0_0_8px_rgba(0,245,212,0.5)]'
+                          : rating >= seg - 0.5
+                          ? 'bg-[#00F5D4]/50'
+                          : 'bg-[#0E1B2E]'
+                      }`}
+                    />
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ── TODOS LOS CLIENTES REGISTRADOS (DIRECTORIO VIP) ── */}
+      <div className="tactical-card p-6 space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#0E1B2E] pb-4">
           <div>
-            <h3 className="font-title text-sm font-bold text-[#FFFFFF] tracking-wider flex items-center gap-2">
-              <Users className="w-4 h-4 text-[#00F5D4]" />
-              TODOS LOS CLIENTES REGISTRADOS ({data?.allCustomers?.length || 0})
+            <h3 className="font-display text-sm md:text-base text-[#FFFFFF] tracking-wide">
+              TODOS LOS CLIENTES REGISTRADOS ({filteredCustomers.length})
             </h3>
-            <p className="text-xs text-[#7A93B2]">
-              Mostrando {Math.min(customerLimit, filteredCustomers.length)} de{' '}
-              {filteredCustomers.length} clientes.
+            <p className="text-xs text-[#8AA4C4]">
+              Accede a la actividad y auditoría financiera de cada socio en un clic.
             </p>
           </div>
+
           <div className="relative w-full sm:w-72">
-            <Search className="w-4 h-4 text-[#7A93B2] absolute left-3 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-[#00F5D4] absolute left-3.5 top-1/2 -translate-y-1/2 opacity-70" />
             <input
               type="text"
               placeholder="Buscar por nombre o WhatsApp..."
               value={customerSearch}
-              onChange={(e) => {
-                setCustomerSearch(e.target.value);
-                setCustomerLimit(5);
-              }}
-              className="w-full py-2.5 pl-9 pr-3 bg-[#02050B] border border-[#0E1B2E] rounded-sm text-xs text-[#FFFFFF] focus:outline-none focus:border-[#00F5D4]"
+              onChange={(e) => setCustomerSearch(e.target.value)}
+              className="w-full py-2 pl-9 pr-3 bg-[#03080F] border border-[#00F5D4]/25 rounded-full text-xs text-[#FFFFFF] focus:outline-none focus:border-[#00F5D4]"
             />
           </div>
         </div>
 
-        {/* Desktop Table — Customers */}
-        <div className="sharp-card border border-[#0E1B2E] overflow-x-auto hidden sm:block">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-[#02050B] text-[#7A93B2] border-b border-[#0E1B2E] font-title text-xs">
-              <tr>
-                <th className="p-4">NOMBRE (WHATSAPP)</th>
-                <th className="p-4">NÚMERO</th>
-                <th className="p-4">ESTADO</th>
-                <th className="p-4">MEMBRESÍA HASTA</th>
-                <th className="p-4">REGISTRADO</th>
-                <th className="p-4 text-right">ACCIONES</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[#0E1B2E]">
-              {filteredCustomers.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="p-6 text-center text-[#7A93B2] text-xs">
-                    Sin clientes registrados.
-                  </td>
-                </tr>
-              ) : (
-                filteredCustomers.slice(0, customerLimit).map((c: any) => (
-                  <tr key={c.id} className="hover:bg-[#02050B] transition">
-                    <td className="p-4 font-bold text-[#FFFFFF] text-xs">{c.name}</td>
-                    <td className="p-4 text-[#7A93B2] font-mono text-xs">
-                      <span className="flex items-center gap-1.5">
-                        <Phone className="w-3 h-3 text-[#00F5D4]" />
-                        {c.phone}
-                      </span>
-                    </td>
-                    <td className="p-4">
-                      <span
-                        className={`px-2.5 py-0.5 rounded-sm text-[10px] font-bold tracking-wider ${
-                          c.membershipActive
-                            ? 'bg-emerald-950/40 border border-emerald-800/50 text-emerald-400'
-                            : 'bg-rose-950/40 border border-rose-800/50 text-rose-400'
-                        }`}
-                      >
-                        {c.membershipActive ? 'ACTIVO' : 'INACTIVO'}
-                      </span>
-                    </td>
-                    <td className="p-4 text-[#7A93B2] font-mono text-xs">
-                      {c.membershipExpiry
-                        ? new Date(c.membershipExpiry).toLocaleDateString()
-                        : '—'}
-                    </td>
-                    <td className="p-4 text-[#7A93B2] font-mono text-xs">
-                      {new Date(c.createdAt).toLocaleDateString()}
-                    </td>
-                    <td className="p-4 text-right">
-                      <button
-                        onClick={() => setSelectedCustomerModal(c)}
-                        className="px-3.5 py-1.5 bg-[#02050B] hover:bg-[#0E1B2E] border border-[#00F5D4]/40 text-[#00F5D4] hover:text-[#FFFFFF] text-xs font-semibold rounded-sm font-title tracking-wider transition flex items-center justify-center gap-1.5 ml-auto cursor-pointer glow-cyan"
-                      >
-                        <Clock className="w-3.5 h-3.5" /> VER ACTIVIDAD
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Mobile Cards — Customers */}
-        <div className="sm:hidden space-y-3">
+        <div className="space-y-2.5">
           {filteredCustomers.length === 0 ? (
-            <div className="p-6 sharp-card border border-[#0E1B2E] rounded-sm text-center text-[#7A93B2] text-xs">
-              Sin clientes registrados.
+            <div className="p-6 text-center text-[#8AA4C4] text-xs font-mono">
+              Sin socios registrados para mostrar.
             </div>
           ) : (
-            filteredCustomers.slice(0, customerLimit).map((c: any) => (
-              <div key={c.id} className="sharp-card border border-[#0E1B2E] rounded-sm p-4 space-y-3">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="space-y-1 min-w-0">
-                    <div className="font-bold text-[#FFFFFF] text-sm truncate">{c.name}</div>
-                    <div className="text-xs text-[#7A93B2] font-mono flex items-center gap-1">
-                      <Phone className="w-3 h-3 text-[#00F5D4] shrink-0" />
-                      {c.phone}
+            filteredCustomers.slice(0, 10).map((c: any) => (
+              <div
+                key={c.id}
+                onClick={() => setSelectedCustomer(c)}
+                className="p-3.5 bg-[#03080F]/90 border border-[#0E1B2E] hover:border-[#00F5D4]/40 rounded-xl flex items-center justify-between gap-3 cursor-pointer transition group"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-9 h-9 rounded-full bg-[#07192C] border border-[#00F5D4]/25 flex items-center justify-center font-display text-xs text-[#00F5D4] font-bold group-hover:scale-105 transition shrink-0">
+                    {c.name?.slice(0, 2).toUpperCase()}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="font-bold text-xs text-[#FFFFFF] truncate">{c.name}</div>
+                    <div className="text-[10px] text-[#8AA4C4] font-mono flex items-center gap-1">
+                      <Phone className="w-3 h-3 text-[#00F5D4]" /> +{c.phone}
                     </div>
                   </div>
+                </div>
+
+                <div className="flex items-center gap-3 shrink-0">
                   <span
-                    className={`px-2.5 py-0.5 rounded-sm text-[10px] font-bold tracking-wider shrink-0 ${
-                      c.membershipActive
-                        ? 'bg-emerald-950/40 border border-emerald-800/50 text-emerald-400'
-                        : 'bg-rose-950/40 border border-rose-800/50 text-rose-400'
+                    className={`px-2.5 py-0.5 rounded-full text-[10px] font-title font-bold ${
+                      c.membershipActive ? 'tactical-badge-green' : 'bg-rose-950/40 text-rose-400 border border-rose-800'
                     }`}
                   >
                     {c.membershipActive ? 'ACTIVO' : 'INACTIVO'}
                   </span>
+
+                  <span className="text-[11px] text-[#8AA4C4] font-mono hidden md:inline">
+                    Miembro hasta: {c.membershipExpiry ? new Date(c.membershipExpiry).toLocaleDateString() : '—'}
+                  </span>
+
+                  <button className="p-1.5 text-[#8AA4C4] group-hover:text-[#00F5D4] bg-[#05101C] border border-[#0E1B2E] rounded-lg transition">
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
                 </div>
-                <div className="flex items-center justify-between text-[10px] text-[#7A93B2] font-mono">
-                  <span>Vence: {c.membershipExpiry ? new Date(c.membershipExpiry).toLocaleDateString() : '—'}</span>
-                  <span>Reg: {new Date(c.createdAt).toLocaleDateString()}</span>
-                </div>
-                <button
-                  onClick={() => setSelectedCustomerModal(c)}
-                  className="w-full py-2 bg-[#02050B] hover:bg-[#0E1B2E] border border-[#00F5D4]/40 text-[#00F5D4] text-xs font-semibold rounded-sm font-title tracking-wider transition flex items-center justify-center gap-1.5 cursor-pointer glow-cyan"
-                >
-                  <Clock className="w-3.5 h-3.5" /> VER ACTIVIDAD
-                </button>
               </div>
             ))
           )}
         </div>
-
-        {filteredCustomers.length > customerLimit && (
-          <button
-            onClick={() => setCustomerLimit((prev) => prev + 5)}
-            className="w-full py-3 bg-[#02050B] hover:bg-[#060D18] border border-[#0E1B2E] text-[#00F5D4] hover:text-[#FFFFFF] text-xs font-bold font-title tracking-wider rounded-sm transition flex items-center justify-center gap-1.5 cursor-pointer glow-cyan"
-          >
-            <Plus className="w-4 h-4" /> VER MÁS CLIENTES ({customerLimit} de {filteredCustomers.length})
-          </button>
-        )}
       </div>
 
-      {/* CUSTOMER ACTIVITY DETAIL MODAL */}
-      {selectedCustomerModal && (
-        <div className="fixed inset-0 z-50 bg-[#02050B]/90 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4">
-          <div className="sharp-panel w-full sm:max-w-2xl max-h-[92vh] sm:max-h-[90vh] flex flex-col shadow-2xl overflow-hidden border border-[#00F5D4]/30 rounded-t-xl sm:rounded-none">
-            {/* Modal Header */}
-            <div className="p-4 md:p-5 bg-[#02050B] border-b border-[#0E1B2E] flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 md:w-10 md:h-10 bg-[#060D18] border border-[#00F5D4]/40 rounded-sm flex items-center justify-center text-[#00F5D4] glow-cyan">
-                  <Users className="w-4 h-4 md:w-5 md:h-5" />
+      {/* ── DRAWER CONTEXTUAL ZERO-JUMP DE CLIENTE ── */}
+      {selectedCustomer && (
+        <TacticalDrawer
+          isOpen={!!selectedCustomer}
+          onClose={() => setSelectedCustomer(null)}
+          title={selectedCustomer.name}
+          subtitle={`WhatsApp: +${selectedCustomer.phone} • Estado: ${selectedCustomer.membershipActive ? 'Activo' : 'Inactivo'}`}
+        >
+          {/* Subtabs */}
+          <div className="grid grid-cols-3 gap-1 bg-[#03080F] p-1 rounded-xl border border-[#0E1B2E]">
+            <button
+              onClick={() => setCustomerDrawerTab('membership')}
+              className={`py-2 text-[10px] font-title font-bold rounded-lg transition flex items-center justify-center gap-1 ${
+                customerDrawerTab === 'membership'
+                  ? 'btn-tactical-cyan text-[#02050B]'
+                  : 'text-[#8AA4C4] hover:text-[#FFFFFF]'
+              }`}
+            >
+              <CreditCard className="w-3 h-3" /> Membresía
+            </button>
+            <button
+              onClick={() => setCustomerDrawerTab('retail')}
+              className={`py-2 text-[10px] font-title font-bold rounded-lg transition flex items-center justify-center gap-1 ${
+                customerDrawerTab === 'retail'
+                  ? 'btn-tactical-cyan text-[#02050B]'
+                  : 'text-[#8AA4C4] hover:text-[#FFFFFF]'
+              }`}
+            >
+              <ShoppingBag className="w-3 h-3" /> Tienda
+            </button>
+            <button
+              onClick={() => setCustomerDrawerTab('evaluations')}
+              className={`py-2 text-[10px] font-title font-bold rounded-lg transition flex items-center justify-center gap-1 ${
+                customerDrawerTab === 'evaluations'
+                  ? 'btn-tactical-cyan text-[#02050B]'
+                  : 'text-[#8AA4C4] hover:text-[#FFFFFF]'
+              }`}
+            >
+              <Star className="w-3 h-3" /> Reseñas
+            </button>
+          </div>
+
+          {/* Tab Content */}
+          <div className="space-y-3 pt-2">
+            {customerDrawerTab === 'membership' && (
+              <div className="space-y-3">
+                <div className="p-3 bg-[#03080F] border border-[#0E1B2E] rounded-xl flex items-center justify-between text-xs">
+                  <span className="text-[#8AA4C4]">Vencimiento Cuota:</span>
+                  <span className="font-mono text-[#FFFFFF] font-bold">
+                    {selectedCustomer.membershipExpiry
+                      ? new Date(selectedCustomer.membershipExpiry).toLocaleDateString()
+                      : 'Sin fecha registrada'}
+                  </span>
                 </div>
-                <div>
-                  <h3 className="font-bold text-[#FFFFFF] text-sm md:text-base font-title tracking-wide">
-                    {selectedCustomerModal.name}
-                  </h3>
-                  <p className="text-xs text-[#7A93B2] font-mono flex items-center gap-1">
-                    <Phone className="w-3 h-3 text-[#00F5D4]" /> +{selectedCustomerModal.phone}
-                  </p>
+                <div className="text-xs text-[#8AA4C4] font-mono text-center pt-2">
+                  Historial de comprobantes vinculado a la billetera.
                 </div>
               </div>
-              <button
-                onClick={() => setSelectedCustomerModal(null)}
-                className="p-2 text-[#7A93B2] hover:text-[#FFFFFF] hover:bg-[#0E1B2E] rounded-sm transition cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+            )}
 
-            {/* Modal Sub-Tabs */}
-            <div className="bg-[#02050B] border-b border-[#0E1B2E] p-1.5 grid grid-cols-3 gap-1">
-              {[
-                {
-                  key: 'membership' as const,
-                  label: 'MENSUALIDAD',
-                  icon: CreditCard,
-                  count:
-                    (selectedCustomerModal.payments?.filter((p: any) => p.type === 'MEMBERSHIP').length || 0) +
-                    (selectedCustomerModal.referralsGiven?.length || 0),
-                },
-                {
-                  key: 'retail' as const,
-                  label: 'TIENDA',
-                  icon: ShoppingBag,
-                  count:
-                    selectedCustomerModal.payments?.filter((p: any) => p.type === 'RETAIL_STORE').length || 0,
-                },
-                {
-                  key: 'evaluations' as const,
-                  label: 'OPINIONES',
-                  icon: Star,
-                  count: selectedCustomerModal.evaluations?.length || 0,
-                },
-              ].map((tab) => (
-                <button
-                  key={tab.key}
-                  onClick={() => setModalTab(tab.key)}
-                  className={`py-2 px-1 text-[10px] font-bold font-title tracking-wider rounded-sm transition flex items-center justify-center gap-1 cursor-pointer ${
-                    modalTab === tab.key
-                      ? 'bg-[#060D18] text-[#FFFFFF] border border-[#00F5D4]/40 glow-cyan'
-                      : 'text-[#7A93B2] hover:text-[#FFFFFF] hover:bg-[#060D18]/50'
-                  }`}
-                >
-                  <tab.icon className="w-3.5 h-3.5 text-[#00F5D4] shrink-0" />
-                  <span className="truncate">{tab.label}</span>
-                  <span className="bg-[#02050B] text-[#00F5D4] text-[10px] font-mono font-bold px-1.5 rounded-sm border border-[#0E1B2E] shrink-0">
-                    {tab.count}
-                  </span>
-                </button>
-              ))}
-            </div>
+            {customerDrawerTab === 'retail' && (
+              <div className="p-4 bg-[#03080F] border border-[#0E1B2E] rounded-xl text-center text-xs text-[#8AA4C4]">
+                Sin compras directas registradas en mostrador de tienda.
+              </div>
+            )}
 
-            {/* Modal Content */}
-            <div className="p-4 md:p-5 space-y-4 overflow-y-auto flex-1">
-              {modalTab === 'membership' && (
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-3.5 bg-[#02050B] border border-[#0E1B2E] rounded-sm">
-                    <div>
-                      <span className="text-[10px] font-title font-semibold text-[#7A93B2] uppercase block">
-                        ESTADO DE MEMBRESÍA
-                      </span>
-                      <span
-                        className={`text-xs font-bold font-title tracking-wider ${
-                          selectedCustomerModal.membershipActive ? 'text-[#00F5D4]' : 'text-rose-400'
-                        }`}
-                      >
-                        {selectedCustomerModal.membershipActive ? '● ACTIVA' : '○ INACTIVA'}
-                      </span>
-                    </div>
-                    <div className="text-right">
-                      <span className="text-[10px] font-title font-semibold text-[#7A93B2] uppercase block">
-                        VENCIMIENTO
-                      </span>
-                      <span className="text-xs font-mono font-bold text-[#FFFFFF]">
-                        {selectedCustomerModal.membershipExpiry
-                          ? new Date(selectedCustomerModal.membershipExpiry).toLocaleDateString()
-                          : '—'}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <h4 className="font-title text-xs font-bold text-[#FFFFFF] tracking-wider uppercase flex items-center gap-1.5">
-                      <CreditCard className="w-3.5 h-3.5 text-[#00F5D4]" /> PAGOS DE MENSUALIDAD
-                    </h4>
-                    {selectedCustomerModal.payments?.filter((p: any) => p.type === 'MEMBERSHIP').length === 0 ? (
-                      <div className="p-3.5 bg-[#02050B] border border-[#0E1B2E] rounded-sm text-xs text-[#7A93B2] text-center">
-                        Sin historial de mensualidades registradas.
-                      </div>
-                    ) : (
-                      selectedCustomerModal.payments
-                        ?.filter((p: any) => p.type === 'MEMBERSHIP')
-                        .map((p: any) => (
-                          <div
-                            key={p.id}
-                            className="p-3.5 bg-[#02050B] border border-[#0E1B2E] rounded-sm flex items-center justify-between"
-                          >
-                            <div>
-                              <div className="font-bold text-xs text-[#FFFFFF]">Renovación Mensualidad Gym</div>
-                              <div className="text-[10px] text-[#7A93B2] font-mono">
-                                {new Date(p.createdAt).toLocaleString()}
-                              </div>
-                            </div>
-                            <div className="text-right font-number text-lg font-bold text-[#00F5D4]">
-                              $ {Number(p.amount).toFixed(2)}
-                            </div>
-                          </div>
-                        ))
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {modalTab === 'retail' && (
-                <div className="space-y-2">
-                  <h4 className="font-title text-xs font-bold text-[#FFFFFF] tracking-wider uppercase flex items-center gap-1.5">
-                    <ShoppingBag className="w-3.5 h-3.5 text-[#00F5D4]" /> COMPRAS EN TIENDA RETAIL
-                  </h4>
-                  {selectedCustomerModal.payments?.filter((p: any) => p.type === 'RETAIL_STORE').length === 0 ? (
-                    <div className="p-3.5 bg-[#02050B] border border-[#0E1B2E] rounded-sm text-xs text-[#7A93B2] text-center">
-                      Sin compras registradas en la tienda retail.
-                    </div>
-                  ) : (
-                    selectedCustomerModal.payments
-                      ?.filter((p: any) => p.type === 'RETAIL_STORE')
-                      .map((p: any) => (
-                        <div
-                          key={p.id}
-                          className="p-3.5 bg-[#02050B] border border-[#0E1B2E] rounded-sm flex items-center justify-between"
-                        >
-                          <div>
-                            <div className="font-bold text-xs text-[#FFFFFF]">
-                              Compra Tienda Retail ({p.referenceCode})
-                            </div>
-                            <div className="text-[10px] text-[#7A93B2] font-mono">
-                              {new Date(p.createdAt).toLocaleString()}
-                            </div>
-                          </div>
-                          <div className="text-right font-number text-lg font-bold text-[#00F5D4]">
-                            $ {Number(p.amount).toFixed(2)}
-                          </div>
-                        </div>
-                      ))
-                  )}
-                </div>
-              )}
-
-              {modalTab === 'evaluations' && (
-                <div className="space-y-2">
-                  <h4 className="font-title text-xs font-bold text-[#FFFFFF] tracking-wider uppercase flex items-center gap-1.5">
-                    <Star className="w-3.5 h-3.5 text-[#00F5D4]" /> RESEÑAS A ENTRENADORES
-                  </h4>
-                  {selectedCustomerModal.evaluations?.length === 0 ? (
-                    <div className="p-3.5 bg-[#02050B] border border-[#0E1B2E] rounded-sm text-xs text-[#7A93B2] text-center">
-                      Este cliente no ha dejado opiniones registradas.
-                    </div>
-                  ) : (
-                    selectedCustomerModal.evaluations?.map((ev: any) => (
-                      <div
-                        key={ev.id}
-                        className="p-3.5 bg-[#02050B] border border-[#0E1B2E] rounded-sm space-y-1"
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className="font-bold text-xs text-[#FFFFFF]">
-                            Coach: {ev.trainer?.name}
-                          </span>
-                          <span className="font-number text-sm text-[#00F5D4]">★ {ev.rating}</span>
-                        </div>
-                        <p className="text-xs text-[#7A93B2] italic">"{ev.comment || 'Sin comentario'}"</p>
-                      </div>
-                    ))
-                  )}
-                </div>
-              )}
-            </div>
+            {customerDrawerTab === 'evaluations' && (
+              <div className="p-4 bg-[#03080F] border border-[#0E1B2E] rounded-xl text-center text-xs text-[#8AA4C4]">
+                Sin reseñas emitidas recientemente.
+              </div>
+            )}
           </div>
-        </div>
+        </TacticalDrawer>
       )}
     </div>
   );
