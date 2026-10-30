@@ -81,6 +81,19 @@ export default function CommandControlCenterPage() {
     }
   }, []);
 
+  // Auto-poll WhatsApp connection status every 3 seconds while QR modal is open
+  useEffect(() => {
+    let interval: NodeJS.Timeout | null = null;
+    if (isWhatsAppModalOpen && waState !== 'CONNECTED') {
+      interval = setInterval(() => {
+        loadWhatsAppStatus();
+      }, 3000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isWhatsAppModalOpen, waState]);
+
   const handleInitWhatsAppInstance = async () => {
     setWaLoading(true);
     setIsWhatsAppModalOpen(true);
@@ -556,6 +569,8 @@ export default function CommandControlCenterPage() {
         qrValue={waQr ? (waQr.startsWith('data:') ? waQr : `data:image/png;base64,${waQr}`) : (waLoading ? '' : 'esperando_qr')}
         badge="INSTANCIA AUTOMÁTICA"
         isImage={Boolean(waQr)}
+        onRefresh={handleInitWhatsAppInstance}
+        isRefreshing={waLoading}
       />
     </div>
   );
