@@ -24,10 +24,10 @@ export async function GET() {
   }
 }
 
-// POST: Create a new tenant with owner credentials
+// POST: Create a new tenant with owner credentials & googleReviewUrl
 export async function POST(request: Request) {
   try {
-    const { name, username, password } = await request.json();
+    const { name, username, password, googleReviewUrl } = await request.json();
 
     if (!name || !username || !password) {
       return NextResponse.json(
@@ -61,11 +61,12 @@ export async function POST(request: Request) {
 
     const passwordHash = await bcrypt.hash(password, 10);
 
-    // Create Tenant and Owner Staff in atomic transaction
+    // Create Tenant, Owner Staff, default Business Units, Branch and dynamic QR Tokens
     const newTenant = await prisma.tenant.create({
       data: {
         name,
         slug: cleanSlug,
+        googleReviewUrl: googleReviewUrl || null,
         isActive: true,
         showOverviewTab: true,
         showEvaluationsTab: true,
@@ -85,16 +86,57 @@ export async function POST(request: Request) {
       },
     });
 
+    // Crear automáticamente unidad y sucursal base para el nuevo gimnasio
+    const crypto = require('crypto');
+    const randomHex = () => crypto.randomBytes(2).toString('hex').toUpperCase();
+
+    const bu = await prisma.businessUnit.create({
+      data: {
+        tenantId: newTenant.id,
+        name: `${name} Principal`,
+        type: 'GYM',
+        isActive: true,
+      },
+    });
+
+    await prisma.branch.create({
+      data: {
+        tenantId: newTenant.id,
+        businessUnitId: bu.id,
+        name: 'Sede Principal',
+        isActive: true,
+      },
+    });
+
+    // Generar los 3 tokens de QR únicos para sus flujos (con expiración amplia renovable)
+    const futureExpiry = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+    await prisma.qrToken.createMany({
+      data: [
+        { tenantId: newTenant.id, type: 'EVALUATION', token: `EVAL-${randomHex()}`, expiresAt: futureExpiry },
+        { tenantId: newTenant.id, type: 'MEMBERSHIP', token: `MEM-${randomHex()}`, expiresAt: futureExpiry },
+        { tenantId: newTenant.id, type: 'RETAIL', token: `RET-${randomHex()}`, expiresAt: futureExpiry },
+      ],
+    });
+
     return NextResponse.json({ success: true, tenant: newTenant });
   } catch (error: any) {
     return NextResponse.json({ error: error?.message || 'Error al crear cliente' }, { status: 500 });
   }
 }
 
-// PUT: Update tenant active status or tab visibility toggles
+// PUT: Update tenant active status, tab visibility toggles, or googleReviewUrl
 export async function PUT(request: Request) {
   try {
-    const { tenantId, isActive, showOverviewTab, showEvaluationsTab, showWalletTab, showConfigTab, password } = await request.json();
+    const {
+      tenantId,
+      isActive,
+      showOverviewTab,
+      showEvaluationsTab,
+      showWalletTab,
+      showConfigTab,
+      password,
+      googleReviewUrl,
+    } = await request.json();
 
     if (!tenantId) {
       return NextResponse.json({ error: 'tenantId requerido' }, { status: 400 });
@@ -107,6 +149,7 @@ export async function PUT(request: Request) {
     if (typeof showEvaluationsTab === 'boolean') updateData.showEvaluationsTab = showEvaluationsTab;
     if (typeof showWalletTab === 'boolean') updateData.showWalletTab = showWalletTab;
     if (typeof showConfigTab === 'boolean') updateData.showConfigTab = showConfigTab;
+    if (googleReviewUrl !== undefined) updateData.googleReviewUrl = googleReviewUrl;
 
     const updatedTenant = await prisma.tenant.update({
       where: { id: tenantId },

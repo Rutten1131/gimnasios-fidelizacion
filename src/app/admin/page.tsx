@@ -33,6 +33,7 @@ export default function SuperAdminPage() {
   const [newName, setNewName] = useState('');
   const [newUsername, setNewUsername] = useState('');
   const [newPassword, setNewPassword] = useState('');
+  const [newGoogleReviewUrl, setNewGoogleReviewUrl] = useState('');
   const [createError, setCreateError] = useState('');
 
   // Password reset state
@@ -113,6 +114,7 @@ export default function SuperAdminPage() {
           name: newName,
           username: newUsername,
           password: newPassword,
+          googleReviewUrl: newGoogleReviewUrl.trim() || undefined,
         }),
       });
 
@@ -122,6 +124,7 @@ export default function SuperAdminPage() {
       setNewName('');
       setNewUsername('');
       setNewPassword('');
+      setNewGoogleReviewUrl('');
       setShowCreateModal(false);
       loadTenants();
     } catch (err: any) {
@@ -480,6 +483,22 @@ export default function SuperAdminPage() {
                   required
                   className="w-full py-2 px-3 bg-[#02050B] border border-[#0E1B2E] rounded-sm text-xs text-[#FFFFFF] focus:outline-none focus:border-[#00F5D4]"
                 />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-title text-[#7A93B2] uppercase mb-1">
+                  Enlace Reseñas Google (Opcional)
+                </label>
+                <input
+                  type="url"
+                  placeholder="https://g.page/r/CRWzEc2rIpGjEBM/review"
+                  value={newGoogleReviewUrl}
+                  onChange={(e) => setNewGoogleReviewUrl(e.target.value)}
+                  className="w-full py-2 px-3 bg-[#02050B] border border-[#0E1B2E] rounded-sm text-xs text-[#FFFFFF] focus:outline-none focus:border-[#00F5D4]"
+                />
+                <span className="text-[10px] text-[#7A93B2] mt-0.5 block">
+                  Se enviará automáticamente cuando el socio califique con 5 estrellas.
+                </span>
               </div>
 
               <div className="flex items-center justify-end gap-2 pt-2">

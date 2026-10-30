@@ -15,6 +15,7 @@ model Tenant {
   storeReferralCommPct    Decimal        @default(5.00) @db.Decimal(5, 2)
   currency                String         @default("USD") // "USD" | "PEN"
   whatsappPhone           String?        // Gym's WhatsApp Bot phone number (e.g. 51987654321)
+  googleReviewUrl         String?        // Google Maps Review URL (e.g. https://g.page/r/CRWzEc2rIpGjEBM/review)
   inactivityThresholdDays Int            @default(14)
   isActive                Boolean        @default(true)
   showOverviewTab         Boolean        @default(true)

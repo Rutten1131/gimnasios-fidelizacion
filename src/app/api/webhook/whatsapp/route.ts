@@ -279,6 +279,38 @@ export async function POST(request: Request) {
 
         sessionData.rating = ratingNum;
 
+        // Si es 5 estrellas, guardar directamente y pedir opinión en Google Maps
+        if (ratingNum === 5) {
+          const branch = await prisma.branch.findFirst({ where: { tenantId } });
+          const tenant = await prisma.tenant.findUnique({
+            where: { id: tenantId },
+            select: { name: true, googleReviewUrl: true },
+          });
+
+          await prisma.evaluation.create({
+            data: {
+              tenantId,
+              branchId: branch?.id || 'main_branch',
+              trainerId: sessionData.selectedTrainerId,
+              rating: 5,
+              comment: 'Calificación máxima (5 estrellas)',
+              qrSlugId: `wa_${activeSession.phone}`,
+            },
+          });
+
+          await prisma.chatSession.update({
+            where: { id: activeSession.id },
+            data: { step: 'IDLE' },
+          });
+
+          const reviewLink = tenant?.googleReviewUrl || 'https://g.page/r/CRWzEc2rIpGjEBM/review';
+          const successMessage = `¡Excelente! ⭐⭐⭐⭐⭐ ¡Muchísimas gracias ${pushName}!\n\nNos alegra saber que tuviste una gran experiencia con *${sessionData.selectedTrainerName}* en *${tenant?.name || 'nuestro gimnasio'}*.\n\n🌟 ¿Nos apoyarías con tu reseña en Google? Solo toma 10 segundos y nos ayuda muchísimo:\n👉 ${reviewLink}\n\n¡Gracias por ser parte de nuestra comunidad! 💪`;
+
+          await sendWhatsAppMessage(phone, successMessage, tenantId);
+          return NextResponse.json({ status: 'evaluation_5stars_completed' });
+        }
+
+        // Si es de 1 a 4 estrellas, pedir comentario para mejorar
         await prisma.chatSession.update({
           where: { id: activeSession.id },
           data: { step: 'COMMENT', data: JSON.stringify(sessionData) },
@@ -286,10 +318,10 @@ export async function POST(request: Request) {
 
         await sendWhatsAppMessage(
           phone,
-          `¡Gracias! Por último, déjanos tu sugerencia, lo bueno, lo malo o cualquier comentario sobre tu entrenamiento.\n\n(Escribe *OMITIR* si no tienes comentarios)`,
+          `Gracias por tu calificación. Para nosotros es muy importante mejorar día a día.\n\nPor favor, déjanos un breve comentario de qué podemos mejorar o qué sucedió en tu entrenamiento:\n\n(Escribe *OMITIR* si prefieres no comentar)`,
           tenantId
         );
-        return NextResponse.json({ status: 'rating_saved' });
+        return NextResponse.json({ status: 'rating_saved_needs_comment' });
       }
 
       // Paso: Comentario y guardar todo
