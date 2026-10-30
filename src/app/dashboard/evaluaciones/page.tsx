@@ -25,40 +25,26 @@ export default function EvaluationsPerformancePage() {
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
   const [customerDrawerTab, setCustomerDrawerTab] = useState<'membership' | 'retail' | 'evaluations'>('membership');
 
-  // Trainers ranked by average rating
+  // Real trainers from database ranked by average rating
   const rawTrainers = data?.trainerSummaries || [];
-  const sortedTrainers = [...rawTrainers].sort(
-    (a: any, b: any) => Number(b.ratingAvg || 0) - Number(a.ratingAvg || 0)
-  );
+  const sortedTrainers = [...rawTrainers]
+    .filter((t: any) => {
+      if (coachFilter && t.id !== coachFilter) return false;
+      if (ratingFilter && Math.floor(Number(t.ratingAvg || 0)) !== parseInt(ratingFilter, 10)) return false;
+      return true;
+    })
+    .sort((a: any, b: any) => Number(b.ratingAvg || 0) - Number(a.ratingAvg || 0));
 
-  // Fallback demo trainers if database has few
-  const defaultPodium = [
-    {
-      id: sortedTrainers[0]?.id || 't1',
-      name: sortedTrainers[0]?.name || 'Carlos Entrenador',
-      ratingAvg: sortedTrainers[0]?.ratingAvg || 4.9,
-      evalCount: sortedTrainers[0]?.evalCount || 350,
-      photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
-    },
-    {
-      id: sortedTrainers[1]?.id || 't2',
-      name: sortedTrainers[1]?.name || 'Carlos E.',
-      ratingAvg: sortedTrainers[1]?.ratingAvg || 4.9,
-      evalCount: sortedTrainers[1]?.evalCount || 350,
-      photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80',
-    },
-    {
-      id: sortedTrainers[2]?.id || 't3',
-      name: sortedTrainers[2]?.name || 'Pamela Coach',
-      ratingAvg: sortedTrainers[2]?.ratingAvg || 4.3,
-      evalCount: sortedTrainers[2]?.evalCount || 250,
-      photo: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80',
-    },
-  ];
+  const top1 = sortedTrainers[0] || null;
+  const top2 = sortedTrainers[1] || null;
+  const top3 = sortedTrainers[2] || null;
 
-  const top1 = defaultPodium[0];
-  const top2 = defaultPodium[1];
-  const top3 = defaultPodium[2];
+  // Real evaluations count and global average from backend
+  const allEvaluations = data?.evaluations || [];
+  const globalRatingAvg =
+    allEvaluations.length > 0
+      ? (allEvaluations.reduce((acc: number, ev: any) => acc + Number(ev.rating || 0), 0) / allEvaluations.length).toFixed(1)
+      : '5.0';
 
   // Customers filtered list
   const filteredCustomers = (data?.allCustomers || []).filter((c: any) => {
@@ -124,106 +110,118 @@ export default function EvaluationsPerformancePage() {
             Tablero de Performance de Coaches
           </h3>
           <span className="text-[11px] font-mono text-[#00F5D4]">
-            4.8 ★ Promedio General
+            {globalRatingAvg} ★ Promedio General
           </span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 items-end">
-          
-          {/* TOP 2 (PLATA) */}
-          <div className="tactical-card p-5 relative overflow-hidden border border-[#8AA4C4]/30 order-2 md:order-1">
-            <div className="flex items-start justify-between gap-3">
-              <div className="space-y-1">
-                <span className="text-[10px] font-title font-bold text-[#8AA4C4] uppercase tracking-wider block">
-                  TOP 2: {top2.name}
-                </span>
-                <div className="flex items-baseline gap-1.5">
-                  <span className="font-display text-3xl text-[#FFFFFF]">
-                    {top2.ratingAvg}★
-                  </span>
-                  <span className="text-[11px] text-[#8AA4C4] font-mono">
-                    ({top2.evalCount} eval.)
-                  </span>
+        {sortedTrainers.length === 0 ? (
+          <div className="p-8 tactical-card text-center text-[#8AA4C4] font-mono text-xs">
+            Sin entrenadores activos en el sistema. Puedes agregar coaches en Centro de Mando.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 items-end">
+            
+            {/* TOP 2 (PLATA) */}
+            {top2 ? (
+              <div className="tactical-card p-5 relative overflow-hidden border border-[#8AA4C4]/30 order-2 md:order-1">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-title font-bold text-[#8AA4C4] uppercase tracking-wider block">
+                      TOP 2: {top2.name}
+                    </span>
+                    <div className="flex items-baseline gap-1.5">
+                      <span className="font-display text-3xl text-[#FFFFFF]">
+                        {top2.ratingAvg}★
+                      </span>
+                      <span className="text-[11px] text-[#8AA4C4] font-mono">
+                        ({top2.reviewCount || 0} eval.)
+                      </span>
+                    </div>
+                  </div>
+                  <div className="w-9 h-9 rounded-full bg-slate-800 border border-slate-400 flex items-center justify-center font-display text-sm font-bold text-slate-200 shadow-md">
+                    2
+                  </div>
+                </div>
+
+                {/* Performance Bar */}
+                <div className="w-full bg-[#03080F] h-2 rounded-full overflow-hidden mt-4">
+                  <div
+                    className="bg-[#00F5D4] h-full rounded-full"
+                    style={{ width: `${(Number(top2.ratingAvg || 5) / 5) * 100}%` }}
+                  />
                 </div>
               </div>
-              <div className="w-9 h-9 rounded-full bg-slate-800 border border-slate-400 flex items-center justify-center font-display text-sm font-bold text-slate-200 shadow-md">
-                2
-              </div>
-            </div>
+            ) : <div className="hidden md:block order-2 md:order-1" />}
 
-            {/* Performance Bar */}
-            <div className="w-full bg-[#03080F] h-2 rounded-full overflow-hidden mt-4">
-              <div
-                className="bg-[#00F5D4] h-full rounded-full"
-                style={{ width: `${(Number(top2.ratingAvg) / 5) * 100}%` }}
-              />
-            </div>
-          </div>
+            {/* TOP 1 (ORO GLOW) */}
+            {top1 && (
+              <div className="tactical-card p-6 relative overflow-hidden border-2 border-[#F59E0B]/70 glow-gold order-1 md:order-2 md:-translate-y-2">
+                <div className="absolute top-0 right-0 bg-[#F59E0B]/20 text-[#F59E0B] text-[9px] font-title font-bold px-3 py-1 rounded-bl-xl border-l border-b border-[#F59E0B]/40">
+                  LÍDER DE LA LIGA
+                </div>
 
-          {/* TOP 1 (ORO GLOW) */}
-          <div className="tactical-card p-6 relative overflow-hidden border-2 border-[#F59E0B]/70 glow-gold order-1 md:order-2 md:-translate-y-2">
-            <div className="absolute top-0 right-0 bg-[#F59E0B]/20 text-[#F59E0B] text-[9px] font-title font-bold px-3 py-1 rounded-bl-xl border-l border-b border-[#F59E0B]/40">
-              LÍDER DE LA LIGA
-            </div>
+                <div className="flex items-start justify-between gap-3 pt-1">
+                  <div className="space-y-1">
+                    <span className="text-[11px] font-title font-bold text-[#FBBF24] uppercase tracking-wider flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5" /> TOP 1: {top1.name}
+                    </span>
+                    <div className="flex items-baseline gap-2">
+                      <span className="font-display text-4xl text-[#FFFFFF] text-gradient-cyan">
+                        {top1.ratingAvg}★
+                      </span>
+                      <span className="text-xs text-[#8AA4C4] font-mono">
+                        ({top1.reviewCount || 0} evaluaciones)
+                      </span>
+                    </div>
+                  </div>
+                  <div className="w-11 h-11 rounded-full bg-gradient-to-tr from-amber-500 to-yellow-300 flex items-center justify-center font-display text-base font-bold text-[#02050B] shadow-xl">
+                    🥇
+                  </div>
+                </div>
 
-            <div className="flex items-start justify-between gap-3 pt-1">
-              <div className="space-y-1">
-                <span className="text-[11px] font-title font-bold text-[#FBBF24] uppercase tracking-wider flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5" /> TOP 1: {top1.name}
-                </span>
-                <div className="flex items-baseline gap-2">
-                  <span className="font-display text-4xl text-[#FFFFFF] text-gradient-cyan">
-                    {top1.ratingAvg}★
-                  </span>
-                  <span className="text-xs text-[#8AA4C4] font-mono">
-                    ({top1.evalCount} evaluaciones)
-                  </span>
+                {/* Performance Bar Golden */}
+                <div className="w-full bg-[#03080F] h-2.5 rounded-full overflow-hidden mt-5">
+                  <div
+                    className="bg-gradient-to-r from-[#F59E0B] to-[#00F5D4] h-full rounded-full"
+                    style={{ width: `${(Number(top1.ratingAvg || 5) / 5) * 100}%` }}
+                  />
                 </div>
               </div>
-              <div className="w-11 h-11 rounded-full bg-gradient-to-tr from-amber-500 to-yellow-300 flex items-center justify-center font-display text-base font-bold text-[#02050B] shadow-xl">
-                🥇
-              </div>
-            </div>
+            )}
 
-            {/* Performance Bar Golden */}
-            <div className="w-full bg-[#03080F] h-2.5 rounded-full overflow-hidden mt-5">
-              <div
-                className="bg-gradient-to-r from-[#F59E0B] to-[#00F5D4] h-full rounded-full"
-                style={{ width: `${(Number(top1.ratingAvg) / 5) * 100}%` }}
-              />
-            </div>
-          </div>
+            {/* TOP 3 (BRONCE) */}
+            {top3 ? (
+              <div className="tactical-card p-5 relative overflow-hidden border border-[#D97706]/40 order-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-title font-bold text-[#D97706] uppercase tracking-wider block">
+                      TOP 3: {top3.name}
+                    </span>
+                    <div className="flex items-baseline gap-1.5">
+                      <span className="font-display text-3xl text-[#FFFFFF]">
+                        {top3.ratingAvg}★
+                      </span>
+                      <span className="text-[11px] text-[#8AA4C4] font-mono">
+                        ({top3.reviewCount || 0} eval.)
+                      </span>
+                    </div>
+                  </div>
+                  <div className="w-9 h-9 rounded-full bg-amber-950 border border-amber-700 flex items-center justify-center font-display text-sm font-bold text-amber-300 shadow-md">
+                    3
+                  </div>
+                </div>
 
-          {/* TOP 3 (BRONCE) */}
-          <div className="tactical-card p-5 relative overflow-hidden border border-[#D97706]/40 order-3">
-            <div className="flex items-start justify-between gap-3">
-              <div className="space-y-1">
-                <span className="text-[10px] font-title font-bold text-[#D97706] uppercase tracking-wider block">
-                  TOP 3: {top3.name}
-                </span>
-                <div className="flex items-baseline gap-1.5">
-                  <span className="font-display text-3xl text-[#FFFFFF]">
-                    {top3.ratingAvg}★
-                  </span>
-                  <span className="text-[11px] text-[#8AA4C4] font-mono">
-                    ({top3.evalCount} eval.)
-                  </span>
+                {/* Performance Bar */}
+                <div className="w-full bg-[#03080F] h-2 rounded-full overflow-hidden mt-4">
+                  <div
+                    className="bg-amber-600 h-full rounded-full"
+                    style={{ width: `${(Number(top3.ratingAvg || 5) / 5) * 100}%` }}
+                  />
                 </div>
               </div>
-              <div className="w-9 h-9 rounded-full bg-amber-950 border border-amber-700 flex items-center justify-center font-display text-sm font-bold text-amber-300 shadow-md">
-                3
-              </div>
-            </div>
-
-            {/* Performance Bar */}
-            <div className="w-full bg-[#03080F] h-2 rounded-full overflow-hidden mt-4">
-              <div
-                className="bg-amber-600 h-full rounded-full"
-                style={{ width: `${(Number(top3.ratingAvg) / 5) * 100}%` }}
-              />
-            </div>
+            ) : <div className="hidden md:block order-3" />}
           </div>
-        </div>
+        )}
       </div>
 
       {/* ── RANKING DE PERFORMANCE MINIMALISTA (BARRAS CIAN) ── */}
