@@ -83,6 +83,7 @@ export default function CommandControlCenterPage() {
 
   const handleInitWhatsAppInstance = async () => {
     setWaLoading(true);
+    setIsWhatsAppModalOpen(true);
     try {
       const res = await fetch('/api/owner/whatsapp-instance', {
         method: 'POST',
@@ -93,10 +94,10 @@ export default function CommandControlCenterPage() {
       if (json.state === 'open' || json.state === 'CONNECTED') {
         setWaState('CONNECTED');
         setWaQr(null);
+        setIsWhatsAppModalOpen(false);
       } else if (json.qrcode) {
         setWaState('CONNECTING');
         setWaQr(json.qrcode);
-        setIsWhatsAppModalOpen(true);
       }
     } catch (e) {
       console.error(e);
@@ -552,8 +553,9 @@ export default function CommandControlCenterPage() {
         onClose={() => setIsWhatsAppModalOpen(false)}
         title="Vincular WhatsApp"
         subtitle="Abre WhatsApp en tu teléfono -> Dispositivos vinculados y escanea el código."
-        qrValue={waQr ? (waQr.startsWith('data:') ? waQr : `data:image/png;base64,${waQr}`) : 'esperando_qr'}
+        qrValue={waQr ? (waQr.startsWith('data:') ? waQr : `data:image/png;base64,${waQr}`) : (waLoading ? '' : 'esperando_qr')}
         badge="INSTANCIA AUTOMÁTICA"
+        isImage={Boolean(waQr)}
       />
     </div>
   );
