@@ -402,38 +402,68 @@ export default function DashboardOverviewPage() {
         </div>
       </div>
 
-      {/* ── VERIFICACIÓN DE PAGOS PENDIENTES ── */}
-      {data?.pendingPayments && data.pendingPayments.length > 0 && (
-        <div className="tactical-card p-6 space-y-4 border border-[#00F5D4]/30 glow-cyan">
-          <div className="flex items-center justify-between">
-            <h3 className="font-display text-sm md:text-base text-[#FFFFFF] tracking-wide flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#00F5D4] animate-pulse" />
-              PAGOS PENDIENTES DE VERIFICACIÓN ({data.pendingPayments.length})
+      {/* ── SECCIÓN TÁCTICA: VERIFICACIÓN DE PAGOS ── */}
+      <div className="tactical-card p-6 space-y-4 border border-[#00F5D4]/25">
+        <div className="flex items-center justify-between border-b border-[#0E1B2E] pb-3">
+          <div className="flex items-center gap-2.5">
+            <span
+              className={`w-2.5 h-2.5 rounded-full ${
+                data?.pendingPayments && data.pendingPayments.length > 0
+                  ? 'bg-[#00F5D4] animate-pulse'
+                  : 'bg-[#8AA4C4]/40'
+              }`}
+            />
+            <h3 className="font-display text-sm md:text-base text-[#FFFFFF] tracking-wide">
+              VERIFICACIÓN DE PAGOS EN TIEMPO REAL
             </h3>
           </div>
+          <span
+            className={`px-3 py-1 rounded-full text-[10px] font-title font-bold ${
+              data?.pendingPayments && data.pendingPayments.length > 0
+                ? 'tactical-badge-cyan glow-cyan'
+                : 'bg-[#03080F] text-[#8AA4C4] border border-[#0E1B2E]'
+            }`}
+          >
+            {data?.pendingPayments?.length || 0} PENDIENTES
+          </span>
+        </div>
 
+        {(!data?.pendingPayments || data.pendingPayments.length === 0) ? (
+          <div className="p-6 bg-[#03080F]/60 rounded-xl border border-[#0E1B2E] text-center text-xs text-[#8AA4C4] font-mono">
+            Sin pagos pendientes por verificar. Cuando un socio escanee para pagar mensualidad o tienda, aparecerá aquí al instante con su botón de aprobar.
+          </div>
+        ) : (
           <div className="space-y-3">
             {data.pendingPayments.map((p: any) => (
               <div
                 key={p.id}
-                className="p-4 bg-[#03080F]/90 border border-[#0E1B2E] rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                className="p-4 bg-[#03080F]/90 border border-[#00F5D4]/30 hover:border-[#00F5D4]/60 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition shadow-lg"
               >
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <span className="font-bold text-[#FFFFFF] text-sm">{p.customerName}</span>
-                    <span className="text-[10px] bg-[#07192C] text-[#00F5D4] px-2 py-0.5 rounded-full font-mono">
+                    <span className="text-[10px] bg-[#07192C] text-[#00F5D4] px-2.5 py-0.5 rounded-full font-mono border border-[#00F5D4]/30">
                       {p.referenceCode}
                     </span>
                   </div>
                   <div className="text-xs text-[#8AA4C4]">
-                    WhatsApp: +{p.customerPhone} • {p.type === 'MEMBERSHIP' ? 'Cuota Mensual' : 'Tienda Retail'}
+                    WhatsApp: +{p.customerPhone} • Tipo:{' '}
+                    <span className="text-[#FFFFFF] font-semibold">
+                      {p.type === 'MEMBERSHIP' ? 'Cuota Mensual Gym' : 'Compra Tienda Retail'}
+                    </span>
                   </div>
-                  <div className="font-display text-lg text-[#00F5D4] font-bold">
-                    $ {Number(p.amount).toFixed(2)} USD
-                  </div>
+                  {Number(p.amount) > 0 ? (
+                    <div className="font-display text-lg text-[#00F5D4] font-bold">
+                      $ {Number(p.amount).toFixed(2)} USD
+                    </div>
+                  ) : (
+                    <div className="text-[11px] font-title font-bold text-[#00F5D4] bg-[#00F5D4]/10 border border-[#00F5D4]/30 px-2.5 py-0.5 rounded-md inline-block">
+                      SOLICITUD DE ACCESO EN ESPERA DE APROBACIÓN
+                    </div>
+                  )}
                 </div>
 
-                <div className="flex items-center gap-2 self-end sm:self-center">
+                <div className="flex items-center gap-2.5 self-end sm:self-center">
                   <button
                     onClick={() => handleVerifyPayment(p.id, 'REJECT')}
                     disabled={verifyingId === p.id}
@@ -444,7 +474,7 @@ export default function DashboardOverviewPage() {
                   <button
                     onClick={() => handleVerifyPayment(p.id, 'APPROVE')}
                     disabled={verifyingId === p.id}
-                    className="px-4 py-2 btn-tactical-cyan text-xs font-title font-bold rounded-xl transition cursor-pointer flex items-center gap-1.5"
+                    className="px-4 py-2 btn-tactical-cyan text-xs font-title font-bold rounded-xl transition cursor-pointer flex items-center gap-1.5 glow-cyan"
                   >
                     <CheckCircle className="w-4 h-4" /> Aprobar
                   </button>
@@ -452,8 +482,8 @@ export default function DashboardOverviewPage() {
               </div>
             ))}
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* ── ZERO-JUMP DRAWER CONTEXTUAL (HISTORIAL DE TRANSACCIONES) ── */}
       <TacticalDrawer
